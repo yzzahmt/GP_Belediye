@@ -93,4 +93,4 @@ namespace Belediye_Otomasyonu
 
         }
     }
-}
+ }
