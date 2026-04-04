@@ -21,5 +21,25 @@ namespace Belediye_Otomasyonu
         {
 
         }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void GrafikController_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pnlMainContent_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
