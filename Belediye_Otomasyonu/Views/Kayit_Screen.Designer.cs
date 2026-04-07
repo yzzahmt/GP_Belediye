@@ -62,8 +62,9 @@
             // 
             // kayit_lbl
             // 
+            this.kayit_lbl.BackColor = System.Drawing.Color.Transparent;
             this.kayit_lbl.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.kayit_lbl.ForeColor = System.Drawing.Color.LightSeaGreen;
+            this.kayit_lbl.ForeColor = System.Drawing.Color.LightGreen;
             this.kayit_lbl.Location = new System.Drawing.Point(118, 30);
             this.kayit_lbl.Margin = new System.Windows.Forms.Padding(5, 3, 5, 0);
             this.kayit_lbl.MaximumSize = new System.Drawing.Size(500, 50);
@@ -108,7 +109,7 @@
             // 
             // kayitOl_btn
             // 
-            this.kayitOl_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.kayitOl_btn.BackColor = System.Drawing.SystemColors.ControlDark;
             this.kayitOl_btn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.kayitOl_btn.Location = new System.Drawing.Point(116, 377);
             this.kayitOl_btn.Name = "kayitOl_btn";
@@ -120,6 +121,7 @@
             // 
             // Name_lbl
             // 
+            this.Name_lbl.BackColor = System.Drawing.Color.Transparent;
             this.Name_lbl.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.Name_lbl.Location = new System.Drawing.Point(29, 98);
             this.Name_lbl.Name = "Name_lbl";
@@ -129,6 +131,7 @@
             // 
             // label2
             // 
+            this.label2.BackColor = System.Drawing.Color.Transparent;
             this.label2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label2.Location = new System.Drawing.Point(29, 144);
             this.label2.Name = "label2";
@@ -138,6 +141,7 @@
             // 
             // label3
             // 
+            this.label3.BackColor = System.Drawing.Color.Transparent;
             this.label3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label3.Location = new System.Drawing.Point(29, 193);
             this.label3.Name = "label3";
@@ -147,6 +151,7 @@
             // 
             // label4
             // 
+            this.label4.BackColor = System.Drawing.Color.Transparent;
             this.label4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label4.Location = new System.Drawing.Point(29, 239);
             this.label4.Name = "label4";
@@ -156,6 +161,7 @@
             // 
             // label5
             // 
+            this.label5.BackColor = System.Drawing.Color.Transparent;
             this.label5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label5.Location = new System.Drawing.Point(29, 291);
             this.label5.Name = "label5";
@@ -165,6 +171,7 @@
             // 
             // label6
             // 
+            this.label6.BackColor = System.Drawing.Color.Transparent;
             this.label6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label6.Location = new System.Drawing.Point(29, 335);
             this.label6.Name = "label6";
@@ -177,6 +184,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.BackgroundImage = global::Belediye_Otomasyonu.Properties.Resources.istockphoto_501462056_612x612;
             this.ClientSize = new System.Drawing.Size(485, 450);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
