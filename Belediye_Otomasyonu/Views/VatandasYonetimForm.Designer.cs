@@ -38,8 +38,8 @@ namespace Belediye_Otomasyonu.Views
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(0, 0);
             this.panelTop.Name = "panelTop";
-            this.panelTop.Padding = new System.Windows.Forms.Padding(16);
-            this.panelTop.Size = new System.Drawing.Size(800, 60);
+            this.panelTop.Padding = new System.Windows.Forms.Padding(16, 12, 16, 8);
+            this.panelTop.Size = new System.Drawing.Size(800, 76);
             this.panelTop.TabIndex = 0;
             // 
             // lblTitle
@@ -69,7 +69,7 @@ namespace Belediye_Otomasyonu.Views
             this.btnSil.Dock = System.Windows.Forms.DockStyle.Left;
             this.btnSil.Location = new System.Drawing.Point(16, 16);
             this.btnSil.Name = "btnSil";
-            this.btnSil.Size = new System.Drawing.Size(120, 28);
+            this.btnSil.Size = new System.Drawing.Size(160, 28);
             this.btnSil.TabIndex = 0;
             this.btnSil.Text = "Seçili Vatandaşı Sil";
             this.btnSil.UseVisualStyleBackColor = true;
@@ -93,7 +93,7 @@ namespace Belediye_Otomasyonu.Views
             this.dgvVatandas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvVatandas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvVatandas.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvVatandas.Location = new System.Drawing.Point(0, 60);
+            this.dgvVatandas.Location = new System.Drawing.Point(0, 76);
             this.dgvVatandas.Name = "dgvVatandas";
             this.dgvVatandas.ReadOnly = true;
             this.dgvVatandas.RowHeadersVisible = false;
@@ -105,10 +105,10 @@ namespace Belediye_Otomasyonu.Views
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.dgvVatandas);
-            this.Controls.Add(this.panelBottom);
+            this.ClientSize = new System.Drawing.Size(900, 520);
             this.Controls.Add(this.panelTop);
+            this.Controls.Add(this.panelBottom);
+            this.Controls.Add(this.dgvVatandas);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.MinimumSize = new System.Drawing.Size(640, 400);
             this.Name = "VatandasYonetimForm";

@@ -121,6 +121,8 @@ namespace Belediye_Otomasyonu.Views
             var lblSub = new Label { Text = "Tüm personellere veya belirli bir personele bildirim gönderin.", Font = UiTheme.SmallFont, ForeColor = Color.FromArgb(180, 200, 230), AutoSize = true, Location = new Point(25, 42) };
             pnlHeader.Controls.AddRange(new Control[] { lblHdr, lblSub, sepHeader });
             this.Controls.Add(pnlHeader); // 3. Top
+            
+            tbl.BringToFront(); // Body'nin ortada kalması için
         }
 
         private void BtnGonder_Click(object sender, EventArgs e)

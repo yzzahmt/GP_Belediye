@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Belediye_Otomasyonu;
 using LiveCharts;
@@ -15,9 +16,9 @@ namespace Belediye_Otomasyonu.Views
         private readonly string _oturumKullaniciAdi;
         private readonly bool _isYonetici;
 
-        // Sidebar buton referansları (aktif seçim için)
+        // Sidebar buton referanslar� (aktif se�im i�in)
         private Button _aktifSidebarBtn;
-        // İçerik paneli
+        // ��erik paneli
         private Panel _pnlIcerik;
         // Bildirim rozet etiketi
         private Label _lblBildirimRozet;
@@ -32,12 +33,12 @@ namespace Belediye_Otomasyonu.Views
             OlusturArayuz();
         }
 
-        // ── Ana Arayüz ───────────────────────────────────────────────────────
+        // �� Ana Aray�z �������������������������������������������������������
         private void OlusturArayuz()
         {
             tableUstBar.Visible = false;
 
-            // İçerik alanı
+            // ��erik alan�
             _pnlIcerik = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -56,39 +57,35 @@ namespace Belediye_Otomasyonu.Views
             UiTheme.FormDizayn(this);
         }
 
-        // ── Sidebar Oluştur ──────────────────────────────────────────────────
+        // �� Sidebar Olu�tur ��������������������������������������������������
         private Panel OlusturSidebar()
         {
-            var sidebar = new Panel
-            {
-                Dock = DockStyle.Left,
-                Width = 240,
-                BackColor = UiTheme.SidebarBg
+            var sidebar = new Panel { Dock = DockStyle.Left, Width = 240, BackColor = UiTheme.SidebarBg };
+            sidebar.Paint += (s, e) => {
+                using (var br = new LinearGradientBrush(new Point(0,0), new Point(0, sidebar.Height), UiTheme.SidebarBg, Color.FromArgb(12,25,65)))
+                    e.Graphics.FillRectangle(br, sidebar.ClientRectangle);
             };
 
-            // Logo alanı
-            var pnlLogo = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 100,
-                BackColor = UiTheme.PrimaryDark,
-                Padding = new Padding(20, 20, 20, 0)
+            var pnlLogo = new Panel { Dock = DockStyle.Top, Height = 100, BackColor = Color.Transparent };
+            pnlLogo.Paint += (s, e) => {
+                using (var br = new LinearGradientBrush(new Point(0,0), new Point(pnlLogo.Width,0), UiTheme.PrimaryDark, Color.FromArgb(18,45,95)))
+                    e.Graphics.FillRectangle(br, pnlLogo.ClientRectangle);
             };
-            var sepLogo = new Panel { Dock = DockStyle.Bottom, Height = 2, BackColor = UiTheme.Accent };
+            var sepLogo = new Panel { Dock = DockStyle.Bottom, Height = 3, BackColor = UiTheme.Accent };
             var lblLogo = new Label
             {
-                Text = "🏛  Belediye\nOtomasyonu",
+                Text = "  Belediye\nOtomasyonu",
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(4, 0, 0, 0)
+                Padding = new Padding(18, 0, 0, 0)
             };
             pnlLogo.Controls.Add(lblLogo);
             pnlLogo.Controls.Add(sepLogo);
             sidebar.Controls.Add(pnlLogo);
 
-            // Kullanıcı bilgi alanı
+            // Kullan�c� bilgi alan�
             var pnlUser = new Panel
             {
                 Dock = DockStyle.Top,
@@ -107,73 +104,50 @@ namespace Belediye_Otomasyonu.Views
             };
             pnlUser.Controls.Add(lblUser);
             sidebar.Controls.Add(pnlUser);
-
-            // Çıkış butonu (en alta)
-            var bCikis = new Button { Text = "  ⏻  Çıkış Yap", Dock = DockStyle.Bottom, Height = 50 };
+            // Cikis butonu
+            var bCikis = new Button { Text = "  ??  ��k�� Yap", Dock = DockStyle.Bottom, Height = 50 };
             UiTheme.SidebarButon(bCikis);
             bCikis.ForeColor = Color.FromArgb(220, 100, 100);
             bCikis.Click += (s, e) => { var g = new İlkGiris(); g.Show(); Close(); };
             sidebar.Controls.Add(bCikis);
 
-            // Separator
             var sep = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Color.FromArgb(40, 60, 100) };
             sidebar.Controls.Add(sep);
 
-            // Yönetici menü öğeleri
             if (_isYonetici)
             {
-                // Bildirim Gönder
-                var bBildirimGonder = new Button { Text = "  📢  Bildirim Gönder", Dock = DockStyle.Top, Height = 48 };
+                var bBildirimGonder = new Button { Text = "  📢  Bildirim Gönder", Dock = DockStyle.Top, Height = 50 };
                 UiTheme.SidebarButon(bBildirimGonder);
-                bBildirimGonder.Click += (s, e) =>
-                {
-                    using (var f = new BildirimGonderForm(_oturumKullaniciAdi))
-                        f.ShowDialog(this);
-                };
+                bBildirimGonder.Click += (s, e) => { using (var f = new BildirimGonderForm(_oturumKullaniciAdi)) f.ShowDialog(this); };
                 sidebar.Controls.Add(bBildirimGonder);
 
-                // Duyuru Ekle
-                var bDuyuru = new Button { Text = "  📌  Duyuru Ekle", Dock = DockStyle.Top, Height = 48 };
+                var bDuyuru = new Button { Text = "  📌  Duyuru Ekle", Dock = DockStyle.Top, Height = 50 };
                 UiTheme.SidebarButon(bDuyuru);
                 bDuyuru.Click += (s, e) => GosterDuyuruEkleDialog();
                 sidebar.Controls.Add(bDuyuru);
 
-                // Personel Yönetimi
-                var bPersonel = new Button { Text = "  👥  Personel Yönetimi", Dock = DockStyle.Top, Height = 48 };
+                var bPersonel = new Button { Text = "  👥  Personel Yönetimi", Dock = DockStyle.Top, Height = 50 };
                 UiTheme.SidebarButon(bPersonel);
-                bPersonel.Click += (s, e) =>
-                {
-                    using (var f = new PersonelYonetimForm(_oturumKullaniciAdi))
-                        f.ShowDialog(this);
-                    YukleDashboardVerileri();
-                };
+                bPersonel.Click += (s, e) => { using (var f = new PersonelYonetimForm(_oturumKullaniciAdi)) f.ShowDialog(this); YukleDashboardVerileri(); };
                 sidebar.Controls.Add(bPersonel);
 
-                // Vatandaş Yönetimi
-                var bVatandas = new Button { Text = "  🧑‍💼  Vatandaş Yönetimi", Dock = DockStyle.Top, Height = 48 };
+                var bVatandas = new Button { Text = "  🧑‍💼  Vatandaş Yönetimi", Dock = DockStyle.Top, Height = 50 };
                 UiTheme.SidebarButon(bVatandas);
-                bVatandas.Click += (s, e) =>
-                {
-                    using (var f = new VatandasYonetimForm(_oturumKullaniciAdi))
-                        f.ShowDialog(this);
-                    YukleDashboardVerileri();
-                };
+                bVatandas.Click += (s, e) => { using (var f = new VatandasYonetimForm(_oturumKullaniciAdi)) f.ShowDialog(this); YukleDashboardVerileri(); };
                 sidebar.Controls.Add(bVatandas);
             }
 
-            // Başvuru Yönetimi (herkes)
-            var bBasvuru = new Button { Text = "  📋  Başvuru Yönetimi", Dock = DockStyle.Top, Height = 48 };
+            var bDilekce = new Button { Text = "  📨  Gelen Dilekce/Basvurular", Dock = DockStyle.Top, Height = 50 };
+            UiTheme.SidebarButon(bDilekce);
+            bDilekce.Click += (s, e) => { SidebarSecimDegistir(bDilekce); GosterGelenDilekceleri(); };
+            sidebar.Controls.Add(bDilekce);
+
+            var bBasvuru = new Button { Text = "  📋  Basvuru Yönetimi", Dock = DockStyle.Top, Height = 50 };
             UiTheme.SidebarButon(bBasvuru);
-            bBasvuru.Click += (s, e) =>
-            {
-                using (var f = new BasvuruYonetimForm(_oturumKullaniciAdi))
-                    f.ShowDialog(this);
-                YukleDashboardVerileri();
-            };
+            bBasvuru.Click += (s, e) => { using (var f = new BasvuruYonetimForm(_oturumKullaniciAdi)) f.ShowDialog(this); YukleDashboardVerileri(); };
             sidebar.Controls.Add(bBasvuru);
 
-            // Bildirimler (herkes)
-            var bBildirim = new Button { Text = "  🔔  Bildirimler", Dock = DockStyle.Top, Height = 48 };
+            var bBildirim = new Button { Text = "  🔔  Bildirimler", Dock = DockStyle.Top, Height = 50 };
             UiTheme.SidebarButon(bBildirim);
             bBildirim.Click += (s, e) =>
             {
@@ -196,7 +170,7 @@ namespace Belediye_Otomasyonu.Views
             sidebar.Controls.Add(bBildirim);
 
             // Ana Sayfa
-            var bAnaSayfa = new Button { Text = "  🏠  Ana Sayfa", Dock = DockStyle.Top, Height = 48 };
+            var bAnaSayfa = new Button { Text = "  🏠  Ana Sayfa", Dock = DockStyle.Top, Height = 50 };
             UiTheme.SidebarButon(bAnaSayfa, secili: true);
             bAnaSayfa.Click += (s, e) =>
             {
@@ -218,7 +192,7 @@ namespace Belediye_Otomasyonu.Views
             _aktifSidebarBtn = yeni;
         }
 
-        // ── Dashboard ────────────────────────────────────────────────────────
+        // �� Dashboard ��������������������������������������������������������
         private void GosterDashboard()
         {
             _pnlIcerik.Controls.Clear();
@@ -227,7 +201,7 @@ namespace Belediye_Otomasyonu.Views
             YukleDashboardVerileri();
         }
 
-        // ── Bildirimler Paneli ────────────────────────────────────────────────
+        // �� Bildirimler Paneli ������������������������������������������������
         private void GosterBildirimlerPaneli()
         {
             _pnlIcerik.Controls.Clear();
@@ -247,13 +221,135 @@ namespace Belediye_Otomasyonu.Views
             try { dgv.DataSource = BelediyeDbServisi.BildirimleriGetir(_oturumKullaniciAdi); }
             catch (Exception ex) { MessageBox.Show("Bildirimler yüklenemedi: " + ex.Message); }
 
-            // WinForms docking: Fill önce ekle, Top sonra ekle (ters işlem sırası)
-            pnl.Controls.Add(dgv);   // Fill — önce ekle
+            // WinForms docking: Fill �nce ekle, Top sonra ekle (ters i�lem s�ras�)
+            pnl.Controls.Add(dgv);   // Fill � �nce ekle
 
-            var header = UiTheme.OlusturHeaderPanel("🔔  Bildirimler", "Yöneticilerden gelen bildirimler");
+            var header = UiTheme.OlusturHeaderPanel("??  Bildirimler", "Y�neticilerden gelen bildirimler");
             header.Dock = DockStyle.Top;
-            pnl.Controls.Add(header); // Top — sonra ekle (önce işlenir, alanı alır)
+            pnl.Controls.Add(header); // Top � sonra ekle (�nce i�lenir, alan� al�r)
 
+            _pnlIcerik.Controls.Add(pnl);
+        }
+
+        // �� Gelen Dilek�eler Paneli ������������������������������������������
+        private void GosterGelenDilekceleri()
+        {
+            _pnlIcerik.Controls.Clear();
+            var pnl = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Surface };
+
+            // Filtre araclari
+            var pnlFiltre = new Panel { Dock = DockStyle.Top, Height = 52, BackColor = Color.White, Padding = new Padding(10, 8, 10, 8) };
+            pnlFiltre.Paint += (s, e) => {
+                using (var pen = new Pen(UiTheme.BorderSubtle, 1))
+                    e.Graphics.DrawLine(pen, 0, pnlFiltre.Height-1, pnlFiltre.Width, pnlFiltre.Height-1);
+            };
+            var cmbDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130, Location = new Point(10, 10), Font = UiTheme.UiFont };
+            cmbDur.Items.AddRange(new[] { "Tum�", "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
+            cmbDur.SelectedIndex = 0;
+            var cmbKat = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150, Location = new Point(150, 10), Font = UiTheme.UiFont };
+            cmbKat.Items.AddRange(new[] { "Tum�", "Imar & Yapi", "Sosyal Yardim", "Sikayet", "Temizlik", "Ulasim", "Su & Altyapi", "Vergi & Ruhsat", "Evlilik & Nufus", "Diger" });
+            cmbKat.SelectedIndex = 0;
+            var txtAra = new TextBox { Width = 180, Location = new Point(310, 10), Font = UiTheme.UiFont, ForeColor = UiTheme.TextMuted, Text = "Ara..." };
+            txtAra.GotFocus  += (s, e) => { if (txtAra.Text == "Ara...") { txtAra.Text = ""; txtAra.ForeColor = UiTheme.TextPrimary; } };
+            txtAra.LostFocus += (s, e) => { if (string.IsNullOrEmpty(txtAra.Text)) { txtAra.Text = "Ara..."; txtAra.ForeColor = UiTheme.TextMuted; } };
+            var btnFiltre = new Button { Text = "Filtrele", Location = new Point(500, 8), Width = 90, Height = 32 };
+            UiTheme.AnaEylemButonu(btnFiltre);
+            var btnYenile2 = new Button { Text = "Yenile", Location = new Point(600, 8), Width = 80, Height = 32 };
+            UiTheme.IkincilButon(btnYenile2);
+            pnlFiltre.Controls.AddRange(new Control[] { cmbDur, cmbKat, txtAra, btnFiltre, btnYenile2 });
+
+            // Detay paneli sag
+            var pnlDetay = new Panel { Dock = DockStyle.Right, Width = 310, BackColor = Color.White, Padding = new Padding(14) };
+            pnlDetay.Paint += (s, e) => {
+                using (var pen = new Pen(UiTheme.BorderSubtle))
+                    e.Graphics.DrawLine(pen, 0, 0, 0, pnlDetay.Height);
+            };
+            var lblDetBas = new Label { Text = "Basvuru Detayi", Font = UiTheme.UiFontBold, ForeColor = UiTheme.Primary, Dock = DockStyle.Top, Height = 30 };
+            var rtbDet = new RichTextBox { Height = 200, Dock = DockStyle.Top, ReadOnly = true, BorderStyle = BorderStyle.None, Font = UiTheme.UiFont, BackColor = Color.White };
+            var lblNot = new Label { Text = "Not Ekle:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Top, Height = 24 };
+            var txtNot = new TextBox { Dock = DockStyle.Top, Height = 70, Multiline = true, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
+            var pnlDurBtn = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Color.White };
+            var cmbYeniDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 135, Location = new Point(0, 6), Font = UiTheme.UiFont };
+            cmbYeniDur.Items.AddRange(new[] { "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
+            cmbYeniDur.SelectedIndex = 0;
+            var btnDurGun = new Button { Text = "Durumu Guncelle", Location = new Point(143, 4), Width = 155, Height = 36 };
+            UiTheme.AccentButon(btnDurGun);
+            var btnNotEkle = new Button { Text = "  Not Ekle", Dock = DockStyle.Top, Height = 38 };
+            UiTheme.BasariButon(btnNotEkle);
+            pnlDurBtn.Controls.AddRange(new Control[] { cmbYeniDur, btnDurGun });
+
+            int seciliId = -1;
+            btnNotEkle.Click += (s, e) => {
+                if (seciliId < 0 || string.IsNullOrWhiteSpace(txtNot.Text)) { MessageBox.Show("Once basvuru secin ve not yazin.", "Uyari", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                var hata = BelediyeDbServisi.BasvuruNotEkle(seciliId, _oturumKullaniciAdi, txtNot.Text);
+                if (hata != null) { MessageBox.Show(hata, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+                BelediyeDbServisi.SistemLoguEkle(_oturumKullaniciAdi, _isYonetici?"Yonetici":"Personel", "Not eklendi, Basvuru #" + seciliId);
+                MessageBox.Show("Not eklendi.", "Tamam", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                txtNot.Clear();
+            };
+            btnDurGun.Click += (s, e) => {
+                if (seciliId < 0) { MessageBox.Show("Once basvuru secin.", "Uyari", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                string yD = cmbYeniDur.SelectedItem.ToString();
+                var hata = BelediyeDbServisi.BasvuruDurumGuncelle(seciliId, yD);
+                if (hata != null) { MessageBox.Show(hata, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+                BelediyeDbServisi.SistemLoguEkle(_oturumKullaniciAdi, _isYonetici?"Yonetici":"Personel", "Basvuru #" + seciliId + " durumu: " + yD);
+                MessageBox.Show("Durum guncellendi.", "Tamam", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+
+            pnlDetay.Controls.Add(btnNotEkle);
+            pnlDetay.Controls.Add(txtNot);
+            pnlDetay.Controls.Add(lblNot);
+            pnlDetay.Controls.Add(pnlDurBtn);
+            pnlDetay.Controls.Add(rtbDet);
+            pnlDetay.Controls.Add(lblDetBas);
+
+            // Grid
+            var dgv = new DataGridView { Dock = DockStyle.Fill };
+            UiTheme.DataGridStil(dgv);
+            dgv.AutoGenerateColumns = false;
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", HeaderText = "No", Width = 50 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "VatandasAdi", HeaderText = "Vatandas", Width = 140 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Kategori", HeaderText = "Kategori", Width = 120 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Konu", HeaderText = "Konu", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Durum", HeaderText = "Durum", Width = 105 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "KayitTarihi", HeaderText = "Tarih", Width = 120 });
+            dgv.CellFormatting += (s, e) => {
+                if (e.ColumnIndex >= 0 && dgv.Columns[e.ColumnIndex].DataPropertyName == "Durum" && e.Value != null) {
+                    e.CellStyle.ForeColor = UiTheme.DurumRengi(e.Value.ToString());
+                    e.CellStyle.Font = UiTheme.UiFontBold;
+                }
+            };
+            dgv.SelectionChanged += (s, e) => {
+                if (dgv.CurrentRow?.DataBoundItem is DataRowView drv) {
+                    seciliId = Convert.ToInt32(drv["Id"]);
+                    cmbYeniDur.SelectedItem = drv["Durum"]?.ToString() ?? "Beklemede";
+                    lblDetBas.Text = drv["Konu"]?.ToString();
+                    string notlar = "";
+                    var dtNot = BelediyeDbServisi.BasvuruNotlariniGetir(seciliId);
+                    foreach (DataRow nr in dtNot.Rows)
+                        notlar += "[" + nr["EklenmeTarihi"] + "] " + nr["PersonelAdi"] + ":\n" + nr["Not"] + "\n\n";
+                    rtbDet.Text = "Vatandas: " + drv["VatandasAdi"] + "\nTC: " + drv["VatandasTC"] +
+                        "\nKategori: " + drv["Kategori"] + "\nTarih: " + drv["KayitTarihi"] +
+                        "\n\nNotlar:\n" + (string.IsNullOrEmpty(notlar) ? "Henuz not yok." : notlar);
+                }
+            };
+
+            Action yukle = () => {
+                string dur = cmbDur.SelectedItem?.ToString();
+                string kat = cmbKat.SelectedItem?.ToString();
+                string ara = txtAra.Text == "Ara..." ? null : txtAra.Text;
+                try { dgv.DataSource = BelediyeDbServisi.BasvuruListesiDetayliGetir(kat, dur, ara); }
+                catch (Exception ex) { MessageBox.Show("Yuklenemedi: " + ex.Message); }
+            };
+            yukle();
+            btnFiltre.Click  += (s, e) => yukle();
+            btnYenile2.Click += (s, e) => yukle();
+
+            pnl.Controls.Add(dgv);
+            pnl.Controls.Add(pnlDetay);
+            pnl.Controls.Add(pnlFiltre);
+            var hdr2 = UiTheme.OlusturHeaderPanel("    Gelen Dilekce ve Basvurular", "Vatandaslardan gelen tum basvurular - not ekle, durum degistir");
+            pnl.Controls.Add(hdr2);
             _pnlIcerik.Controls.Add(pnl);
         }
 
@@ -271,7 +367,7 @@ namespace Belediye_Otomasyonu.Views
             catch { }
         }
 
-        // ── Duyuru Ekleme Dialog ──────────────────────────────────────────────
+        // �� Duyuru Ekleme Dialog ����������������������������������������������
         private void GosterDuyuruEkleDialog()
         {
             var frm = new Form
@@ -285,10 +381,10 @@ namespace Belediye_Otomasyonu.Views
                 Font = UiTheme.UiFont
             };
 
-            // 1. Footer — ÖNCE ekle
+            // 1. Footer � �NCE ekle
             var pnlF = new Panel { Dock = DockStyle.Bottom, Height = 58, BackColor = Color.White };
             var sepF  = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = UiTheme.BorderSubtle };
-            var btnKaydet = new Button { Text = "  Yayınla", Dock = DockStyle.Right, Width = 120 };
+            var btnKaydet = new Button { Text = "  Yay�nla", Dock = DockStyle.Right, Width = 120 };
             UiTheme.AccentButon(btnKaydet);
             var btnKapat = new Button { Text = "İptal", Dock = DockStyle.Right, Width = 100 };
             UiTheme.IkincilButon(btnKapat);
@@ -296,7 +392,7 @@ namespace Belediye_Otomasyonu.Views
             pnlF.Controls.AddRange(new Control[] { btnKaydet, btnKapat, sepF });
             frm.Controls.Add(pnlF);
 
-            // 2. Body — TableLayoutPanel (Fill)
+            // 2. Body � TableLayoutPanel (Fill)
             var tbl = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -322,23 +418,24 @@ namespace Belediye_Otomasyonu.Views
             tbl.Controls.Add(rtbI, 0, 3);
             frm.Controls.Add(tbl);
 
-            // 3. Header — SON ekle (WinForms'ta son eklenen Top önce işlenir)
-            frm.Controls.Add(UiTheme.OlusturHeaderPanel("📌  Yeni Duyuru Ekle"));
+            // 3. Header � SON ekle (WinForms'ta son eklenen Top �nce i�lenir)
+            frm.Controls.Add(UiTheme.OlusturHeaderPanel("📌 Yeni Duyuru Ekle"));
+            tbl.BringToFront();
 
             btnKaydet.Click += (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(txtB.Text))
-                { MessageBox.Show("Başlık boş bırakılamaz.", "Eksik Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Warning); txtB.Focus(); return; }
+                { MessageBox.Show("Ba�l�k bo� b�rak�lamaz.", "Eksik Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Warning); txtB.Focus(); return; }
                 var hata = BelediyeDbServisi.DuyuruEkle(txtB.Text, rtbI.Text);
                 if (hata != null) { MessageBox.Show(hata, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
-                MessageBox.Show("Duyuru yayınlandı.", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Duyuru yay�nland�.", "Ba�ar�l�", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 frm.Close();
             };
 
             frm.ShowDialog(this);
         }
 
-        // ── Load ve Veriler ───────────────────────────────────────────────────
+        // �� Load ve Veriler ���������������������������������������������������
         private void PersonelHomeScreen_Load(object sender, EventArgs e)
         {
             // Kart renkleri
@@ -355,14 +452,14 @@ namespace Belediye_Otomasyonu.Views
             cardVatandas.BackColor = UiTheme.CardBackground;
             cardPersonel.BackColor = UiTheme.CardBackground;
             cardBasvuru.BackColor  = UiTheme.CardBackground;
-            // Kart border sol çizgisi
+            // Kart border sol �izgisi
             cardVatandas.Paint += (s, ea) => ea.Graphics.FillRectangle(new SolidBrush(UiTheme.Primary), 0, 0, 4, cardVatandas.Height);
             cardPersonel.Paint += (s, ea) => ea.Graphics.FillRectangle(new SolidBrush(UiTheme.Secondary), 0, 0, 4, cardPersonel.Height);
             cardBasvuru.Paint  += (s, ea) => ea.Graphics.FillRectangle(new SolidBrush(UiTheme.Accent), 0, 0, 4, cardBasvuru.Height);
 
             this.Text = _isYonetici
-                ? $"Belediye Yönetim Sistemi — Yönetici: {_oturumKullaniciAdi}"
-                : $"Belediye Yönetim Sistemi — Personel: {_oturumKullaniciAdi}";
+                ? $"Belediye Y�netim Sistemi � Y�netici: {_oturumKullaniciAdi}"
+                : $"Belediye Y�netim Sistemi � Personel: {_oturumKullaniciAdi}";
 
             YukleDashboardVerileri();
         }
@@ -378,13 +475,13 @@ namespace Belediye_Otomasyonu.Views
                 lblPersonelSayisi.Text  = oz.PersonelSayisi.ToString();
                 lblToplamBasvuru.Text   = oz.ToplamBasvuru.ToString();
                 GuncelleGrafik(oz);
-                lblChartTitle.Text = "Başvuru Durumları — Anlık Özet";
+                lblChartTitle.Text = "Ba�vuru Durumlar� � Anl�k �zet";
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Özet yüklenemedi. MySQL ve `belediye` veritabanı hazır mı?\n\n" + ex.Message,
-                    "Veritabanı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "�zet y�klenemedi. MySQL ve `belediye` veritaban� haz�r m�?\n\n" + ex.Message,
+                    "Veritaban�", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -429,3 +526,4 @@ namespace Belediye_Otomasyonu.Views
         }
     }
 }
+

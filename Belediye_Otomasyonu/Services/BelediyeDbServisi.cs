@@ -502,11 +502,114 @@ ON DUPLICATE KEY UPDATE
         {
             var dt = new DataTable();
             using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
-            using (var da = new MySqlDataAdapter("SELECT Id, Konu, Durum, KayitTarihi FROM basvurular ORDER BY KayitTarihi DESC", con))
+            using (var da = new MySqlDataAdapter("SELECT Id, Konu, Kategori, Durum, VatandasTC, KayitTarihi FROM basvurular ORDER BY KayitTarihi DESC", con))
             {
                 con.Open();
                 da.Fill(dt);
             }
+            return dt;
+        }
+
+        /// <summary>Tüm başvuruları vatandaş ad/soyadı ile birlikte getirir (personel ekranı için).</summary>
+        public static DataTable BasvuruListesiDetayliGetir(string kategoriFiltre = null, string durumFiltre = null, string aramaMetni = null)
+        {
+            var dt = new DataTable();
+            try
+            {
+                string sql = @"
+SELECT b.Id, 
+       COALESCE(CONCAT(k.ad,' ',k.soyad), b.VatandasTC, 'Anonim') AS VatandasAdi,
+       b.VatandasTC,
+       b.Kategori, b.Konu, b.Aciklama, b.Durum, b.KayitTarihi
+FROM basvurular b
+LEFT JOIN kullanicilar k ON k.tc = b.VatandasTC
+WHERE 1=1";
+                if (!string.IsNullOrWhiteSpace(kategoriFiltre) && kategoriFiltre != "Tümü")
+                    sql += " AND b.Kategori = @kat";
+                if (!string.IsNullOrWhiteSpace(durumFiltre) && durumFiltre != "Tümü")
+                    sql += " AND b.Durum = @dur";
+                if (!string.IsNullOrWhiteSpace(aramaMetni))
+                    sql += " AND (b.Konu LIKE @ara OR b.VatandasTC LIKE @ara OR k.ad LIKE @ara OR k.soyad LIKE @ara)";
+                sql += " ORDER BY b.KayitTarihi DESC";
+
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(sql, con))
+                {
+                    if (!string.IsNullOrWhiteSpace(kategoriFiltre) && kategoriFiltre != "Tümü")
+                        da.SelectCommand.Parameters.AddWithValue("@kat", kategoriFiltre);
+                    if (!string.IsNullOrWhiteSpace(durumFiltre) && durumFiltre != "Tümü")
+                        da.SelectCommand.Parameters.AddWithValue("@dur", durumFiltre);
+                    if (!string.IsNullOrWhiteSpace(aramaMetni))
+                        da.SelectCommand.Parameters.AddWithValue("@ara", "%" + aramaMetni.Trim() + "%");
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Tek bir başvurunun detay bilgilerini getirir.</summary>
+        public static DataTable BasvuruDetayiGetir(int id)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+SELECT b.Id, b.Konu, b.Kategori, b.Aciklama, b.Durum, b.VatandasTC, b.KayitTarihi,
+       COALESCE(CONCAT(k.ad,' ',k.soyad), b.VatandasTC, 'Anonim') AS VatandasAdi,
+       k.e_Mail AS VatandasEmail
+FROM basvurular b
+LEFT JOIN kullanicilar k ON k.tc = b.VatandasTC
+WHERE b.Id = @id LIMIT 1", con))
+                {
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Başvuruya personel notu ekler.</summary>
+        public static string BasvuruNotEkle(int basvuruId, string personelAdi, string not)
+        {
+            if (string.IsNullOrWhiteSpace(not)) return "Not boş bırakılamaz.";
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "INSERT INTO basvuru_notlari (BasvuruId, PersonelAdi, Not) VALUES (@bid, @p, @n)", con))
+                {
+                    cmd.Parameters.AddWithValue("@bid", basvuruId);
+                    cmd.Parameters.AddWithValue("@p", personelAdi.Trim());
+                    cmd.Parameters.AddWithValue("@n", not.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        /// <summary>Bir başvurunun tüm notlarını getirir.</summary>
+        public static DataTable BasvuruNotlariniGetir(int basvuruId)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(
+                    "SELECT PersonelAdi, Not, EklenmeTarihi FROM basvuru_notlari WHERE BasvuruId=@id ORDER BY EklenmeTarihi DESC", con))
+                {
+                    da.SelectCommand.Parameters.AddWithValue("@id", basvuruId);
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
             return dt;
         }
 
@@ -667,6 +770,157 @@ WHERE (AliciKadi IS NULL OR AliciKadi = @k) AND Okundu=0", con))
                 return null;
             }
             catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string DuyuruGuncelle(int id, string baslik, string icerik)
+        {
+            if (string.IsNullOrWhiteSpace(baslik) || string.IsNullOrWhiteSpace(icerik))
+                return "Başlık ve içerik zorunludur.";
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "UPDATE duyurular SET Baslik=@b, Icerik=@i WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@b", baslik.Trim());
+                    cmd.Parameters.AddWithValue("@i", icerik.Trim());
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string DuyuruAktifDegistir(int id, bool aktif)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("UPDATE duyurular SET Aktif=@a WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@a", aktif ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string DuyuruSil(int id)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("DELETE FROM duyurular WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        // ── Sistem Logu ────────────────────────────────────────────────────────
+
+        public static void SistemLoguEkle(string kullanici, string rol, string islem)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "INSERT INTO sistem_logu (Kullanici, Rol, Islem) VALUES (@k, @r, @i)", con))
+                {
+                    cmd.Parameters.AddWithValue("@k", kullanici ?? "");
+                    cmd.Parameters.AddWithValue("@r", rol ?? "");
+                    cmd.Parameters.AddWithValue("@i", islem ?? "");
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
+        }
+
+        public static DataTable SistemLoguGetir(int limit = 100)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(
+                    $"SELECT Id, Kullanici, Rol, Islem, Tarih FROM sistem_logu ORDER BY Tarih DESC LIMIT {limit}", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        // ── Rapor Metodları ─────────────────────────────────────────────────────────
+
+        /// <summary>Kategori bazında başvuru sayılarını getirir.</summary>
+        public static DataTable KategoriBazliRaporGetir()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(
+                    "SELECT Kategori, COUNT(*) AS Adet FROM basvurular GROUP BY Kategori ORDER BY Adet DESC", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Durum bazında başvuru sayılarını getirir.</summary>
+        public static DataTable DurumBazliRaporGetir()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(
+                    "SELECT Durum, COUNT(*) AS Adet FROM basvurular GROUP BY Durum ORDER BY Adet DESC", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Son 30 günün günlük başvuru sayılarını getirir.</summary>
+        public static DataTable GunlukBasvuruRaporGetir()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+SELECT DATE(KayitTarihi) AS Gun, COUNT(*) AS Adet 
+FROM basvurular 
+WHERE KayitTarihi >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+GROUP BY DATE(KayitTarihi) 
+ORDER BY Gun", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
         }
 
         // ── Vatandaş Başvuru Metodları ───────────────────────────────────────

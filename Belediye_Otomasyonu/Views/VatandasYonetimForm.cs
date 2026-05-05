@@ -28,7 +28,7 @@ namespace Belediye_Otomasyonu.Views
         private void OlusturHeader()
         {
             panelTop.BackColor = UiTheme.HeaderBg;
-            panelTop.Height = 70;
+            panelTop.Height = 85;
 
             var sep = new Panel { Dock = DockStyle.Bottom, Height = 3, BackColor = UiTheme.Accent };
             panelTop.Controls.Add(sep);
@@ -111,6 +111,7 @@ namespace Belediye_Otomasyonu.Views
 
         private void VatandasYonetimForm_Load(object sender, EventArgs e)
         {
+            dgvVatandas.BringToFront();
             UiTheme.DataGridStil(dgvVatandas);
             dgvVatandas.AutoGenerateColumns = false;
             dgvVatandas.Columns.Clear();

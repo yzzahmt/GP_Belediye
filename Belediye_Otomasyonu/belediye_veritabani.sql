@@ -88,6 +88,28 @@ CREATE TABLE IF NOT EXISTS duyurular (
   PRIMARY KEY (Id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ── Başvuru Notları (personel not ekleyebilir) ───────────────────────────────
+CREATE TABLE IF NOT EXISTS basvuru_notlari (
+  Id int(11) NOT NULL AUTO_INCREMENT,
+  BasvuruId int(11) NOT NULL,
+  PersonelAdi varchar(100) NOT NULL,
+  Not TEXT NOT NULL,
+  EklenmeTarihi datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (Id),
+  KEY idx_basvuru (BasvuruId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Sistem Logu ───────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS sistem_logu (
+  Id int(11) NOT NULL AUTO_INCREMENT,
+  Kullanici varchar(100),
+  Rol varchar(50),
+  Islem varchar(500),
+  Tarih datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (Id),
+  KEY idx_tarih (Tarih)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ── Örnek veriler ─────────────────────────────────────────────────────────────
 INSERT IGNORE INTO yoneticiler (KullaniciAdi, Sifre, Ad, Soyad, Unvan, Aktif) VALUES
 ('admin', 'admin123', 'Sistem', 'Yöneticisi', 'Belediye Başkanı', 1);
@@ -118,3 +140,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ALTER TABLE personeller DROP COLUMN IF EXISTS Yonetici;
 -- ALTER TABLE personeller ADD COLUMN IF NOT EXISTS Departman varchar(100) DEFAULT NULL;
 -- ALTER TABLE yoneticiler ADD COLUMN IF NOT EXISTS Unvan varchar(100) DEFAULT NULL;
+
+-- Yeni tablolar (zaten kurulu sistemlerde çalıştırın):
+-- CREATE TABLE IF NOT EXISTS basvuru_notlari (Id int AUTO_INCREMENT, BasvuruId int NOT NULL, PersonelAdi varchar(100) NOT NULL, Not TEXT NOT NULL, EklenmeTarihi datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(Id), KEY idx_basvuru(BasvuruId)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- CREATE TABLE IF NOT EXISTS sistem_logu (Id int AUTO_INCREMENT, Kullanici varchar(100), Rol varchar(50), Islem varchar(500), Tarih datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(Id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
