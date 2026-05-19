@@ -1757,5 +1757,168 @@ WHERE b.Id = @id LIMIT 1", con))
             catch { }
             return dt;
         }
+
+        // ── Personel Profil Metodları ─────────────────────────────────────────
+
+        /// <summary>Personel kendi profil bilgilerini getirir (personeller tablosu).</summary>
+        public static DataTable PersonelTamProfilGetir(string kullaniciAdi)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    // Önce personeller tablosunda telefon/adres kolonlarını güvence altına al
+                    bool hasTel = false, hasAdres = false, hasEmail = false;
+                    using (var cmdCol = new MySqlCommand("SHOW COLUMNS FROM personeller", con))
+                    using (var reader = cmdCol.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "Telefon", StringComparison.OrdinalIgnoreCase)) hasTel = true;
+                            if (string.Equals(col, "Adres", StringComparison.OrdinalIgnoreCase)) hasAdres = true;
+                            if (string.Equals(col, "Email", StringComparison.OrdinalIgnoreCase)) hasEmail = true;
+                        }
+                    }
+                    if (!hasTel)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE personeller ADD COLUMN Telefon varchar(20) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasAdres)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE personeller ADD COLUMN Adres text DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasEmail)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE personeller ADD COLUMN Email varchar(100) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    using (var da = new MySqlDataAdapter(
+                        "SELECT KullaniciAdi, Ad, Soyad, COALESCE(Email,'') AS Email, COALESCE(Telefon,'') AS Telefon, COALESCE(Adres,'') AS Adres, COALESCE(Departman,'') AS Departman FROM personeller WHERE KullaniciAdi=@k LIMIT 1", con))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Personel kendi bilgilerini günceller (isteğe bağlı şifre dahil).</summary>
+        public static string PersonelTamProfilGuncelle(string kullaniciAdi, string ad, string soyad, string email, string telefon, string adres, string yeniSifre = null)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    string sql = @"UPDATE personeller SET Ad=@a, Soyad=@s, Email=@e, Telefon=@t, Adres=@adr";
+                    if (!string.IsNullOrWhiteSpace(yeniSifre))
+                        sql += ", Sifre=@p";
+                    sql += " WHERE KullaniciAdi=@k";
+
+                    using (var cmd = new MySqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        cmd.Parameters.AddWithValue("@a", (ad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@s", (soyad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@e", (email ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@t", string.IsNullOrWhiteSpace(telefon) ? (object)DBNull.Value : telefon.Trim());
+                        cmd.Parameters.AddWithValue("@adr", string.IsNullOrWhiteSpace(adres) ? (object)DBNull.Value : adres.Trim());
+                        if (!string.IsNullOrWhiteSpace(yeniSifre))
+                            cmd.Parameters.AddWithValue("@p", yeniSifre);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        /// <summary>Yönetici kendi profil bilgilerini getirir (yoneticiler tablosu).</summary>
+        public static DataTable YoneticiTamProfilGetir(string kullaniciAdi)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    bool hasTel = false, hasAdres = false, hasEmail = false;
+                    using (var cmdCol = new MySqlCommand("SHOW COLUMNS FROM yoneticiler", con))
+                    using (var reader = cmdCol.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "Telefon", StringComparison.OrdinalIgnoreCase)) hasTel = true;
+                            if (string.Equals(col, "Adres", StringComparison.OrdinalIgnoreCase)) hasAdres = true;
+                            if (string.Equals(col, "Email", StringComparison.OrdinalIgnoreCase)) hasEmail = true;
+                        }
+                    }
+                    if (!hasTel)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE yoneticiler ADD COLUMN Telefon varchar(20) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasAdres)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE yoneticiler ADD COLUMN Adres text DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasEmail)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE yoneticiler ADD COLUMN Email varchar(100) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    using (var da = new MySqlDataAdapter(
+                        "SELECT KullaniciAdi, Ad, Soyad, COALESCE(Email,'') AS Email, COALESCE(Telefon,'') AS Telefon, COALESCE(Adres,'') AS Adres, COALESCE(Unvan,'') AS Unvan FROM yoneticiler WHERE KullaniciAdi=@k LIMIT 1", con))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Yönetici kendi bilgilerini günceller.</summary>
+        public static string YoneticiTamProfilGuncelle(string kullaniciAdi, string ad, string soyad, string email, string telefon, string adres, string yeniSifre = null)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    string sql = @"UPDATE yoneticiler SET Ad=@a, Soyad=@s, Email=@e, Telefon=@t, Adres=@adr";
+                    if (!string.IsNullOrWhiteSpace(yeniSifre))
+                        sql += ", Sifre=@p";
+                    sql += " WHERE KullaniciAdi=@k";
+
+                    using (var cmd = new MySqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        cmd.Parameters.AddWithValue("@a", (ad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@s", (soyad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@e", (email ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@t", string.IsNullOrWhiteSpace(telefon) ? (object)DBNull.Value : telefon.Trim());
+                        cmd.Parameters.AddWithValue("@adr", string.IsNullOrWhiteSpace(adres) ? (object)DBNull.Value : adres.Trim());
+                        if (!string.IsNullOrWhiteSpace(yeniSifre))
+                            cmd.Parameters.AddWithValue("@p", yeniSifre);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
     }
 }

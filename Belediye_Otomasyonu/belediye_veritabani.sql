@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS basvurular (
   Durum varchar(32) NOT NULL DEFAULT 'Beklemede',
   VatandasTC varchar(11) NULL,
   KayitTarihi datetime DEFAULT CURRENT_TIMESTAMP,
+  AtananDepartman varchar(100) DEFAULT NULL,
+  AtananPersonelKadi varchar(50) DEFAULT NULL,
   PRIMARY KEY (Id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

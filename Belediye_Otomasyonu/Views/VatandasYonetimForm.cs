@@ -18,6 +18,7 @@ namespace Belediye_Otomasyonu.Views
         {
             _oturumKullaniciAdi = oturumKullaniciAdi ?? "";
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             UiTheme.FormDizayn(this);
             OlusturDuzenlePanel();
             OlusturHeader();

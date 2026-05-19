@@ -180,7 +180,7 @@ namespace Belediye_Otomasyonu.Views
             // PersonelGiris
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = global::Belediye_Otomasyonu.UiTheme.Surface;
             this.ClientSize = new System.Drawing.Size(749, 480);
             this.Controls.Add(this.tabloAlan);

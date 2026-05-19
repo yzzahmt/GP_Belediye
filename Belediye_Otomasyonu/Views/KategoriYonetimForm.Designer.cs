@@ -1,9 +1,9 @@
 namespace Belediye_Otomasyonu.Views
 {
-    partial class VatandasYonetimForm
+    partial class KategoriYonetimForm
     {
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.DataGridView dgvVatandas;
+        private System.Windows.Forms.DataGridView dgvKategori;
         private System.Windows.Forms.Panel panelTop;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Panel panelBottom;
@@ -21,13 +21,13 @@ namespace Belediye_Otomasyonu.Views
 
         private void InitializeComponent()
         {
-            this.dgvVatandas = new System.Windows.Forms.DataGridView();
+            this.dgvKategori = new System.Windows.Forms.DataGridView();
             this.panelTop = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.panelBottom = new System.Windows.Forms.Panel();
             this.btnSil = new System.Windows.Forms.Button();
             this.btnKapat = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvVatandas)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvKategori)).BeginInit();
             this.panelTop.SuspendLayout();
             this.panelBottom.SuspendLayout();
             this.SuspendLayout();
@@ -39,7 +39,7 @@ namespace Belediye_Otomasyonu.Views
             this.panelTop.Location = new System.Drawing.Point(0, 0);
             this.panelTop.Name = "panelTop";
             this.panelTop.Padding = new System.Windows.Forms.Padding(16, 12, 16, 8);
-            this.panelTop.Size = new System.Drawing.Size(800, 76);
+            this.panelTop.Size = new System.Drawing.Size(700, 76);
             this.panelTop.TabIndex = 0;
             // 
             // lblTitle
@@ -51,7 +51,7 @@ namespace Belediye_Otomasyonu.Views
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(200, 30);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Vatandaş Yönetimi";
+            this.lblTitle.Text = "Kategori Yönetimi";
             // 
             // panelBottom
             // 
@@ -61,7 +61,7 @@ namespace Belediye_Otomasyonu.Views
             this.panelBottom.Location = new System.Drawing.Point(0, 390);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Padding = new System.Windows.Forms.Padding(16);
-            this.panelBottom.Size = new System.Drawing.Size(800, 60);
+            this.panelBottom.Size = new System.Drawing.Size(700, 60);
             this.panelBottom.TabIndex = 2;
             // 
             // btnSil
@@ -71,14 +71,14 @@ namespace Belediye_Otomasyonu.Views
             this.btnSil.Name = "btnSil";
             this.btnSil.Size = new System.Drawing.Size(160, 28);
             this.btnSil.TabIndex = 0;
-            this.btnSil.Text = "Seçili Vatandaşı Sil";
+            this.btnSil.Text = "Seçili Kategoriyi Sil";
             this.btnSil.UseVisualStyleBackColor = true;
             this.btnSil.Click += new System.EventHandler(this.btnSil_Click);
             // 
             // btnKapat
             // 
             this.btnKapat.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnKapat.Location = new System.Drawing.Point(684, 16);
+            this.btnKapat.Location = new System.Drawing.Point(584, 16);
             this.btnKapat.Name = "btnKapat";
             this.btnKapat.Size = new System.Drawing.Size(100, 28);
             this.btnKapat.TabIndex = 1;
@@ -86,36 +86,36 @@ namespace Belediye_Otomasyonu.Views
             this.btnKapat.UseVisualStyleBackColor = true;
             this.btnKapat.Click += new System.EventHandler(this.btnKapat_Click);
             // 
-            // dgvVatandas
+            // dgvKategori
             // 
-            this.dgvVatandas.AllowUserToAddRows = false;
-            this.dgvVatandas.AllowUserToDeleteRows = false;
-            this.dgvVatandas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvVatandas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvVatandas.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvVatandas.Location = new System.Drawing.Point(0, 76);
-            this.dgvVatandas.Name = "dgvVatandas";
-            this.dgvVatandas.ReadOnly = true;
-            this.dgvVatandas.RowHeadersVisible = false;
-            this.dgvVatandas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvVatandas.Size = new System.Drawing.Size(800, 330);
-            this.dgvVatandas.TabIndex = 1;
+            this.dgvKategori.AllowUserToAddRows = false;
+            this.dgvKategori.AllowUserToDeleteRows = false;
+            this.dgvKategori.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvKategori.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvKategori.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvKategori.Location = new System.Drawing.Point(0, 76);
+            this.dgvKategori.Name = "dgvKategori";
+            this.dgvKategori.ReadOnly = true;
+            this.dgvKategori.RowHeadersVisible = false;
+            this.dgvKategori.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvKategori.Size = new System.Drawing.Size(700, 330);
+            this.dgvKategori.TabIndex = 1;
             // 
-            // VatandasYonetimForm
+            // KategoriYonetimForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(900, 520);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(800, 500);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelBottom);
-            this.Controls.Add(this.dgvVatandas);
+            this.Controls.Add(this.dgvKategori);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.MinimumSize = new System.Drawing.Size(640, 400);
-            this.Name = "VatandasYonetimForm";
+            this.MinimumSize = new System.Drawing.Size(600, 350);
+            this.Name = "KategoriYonetimForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Vatandaş Yönetimi";
-            this.Load += new System.EventHandler(this.VatandasYonetimForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvVatandas)).EndInit();
+            this.Text = "Kategori Yönetimi";
+            this.Load += new System.EventHandler(this.KategoriYonetimForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvKategori)).EndInit();
             this.panelTop.ResumeLayout(false);
             this.panelTop.PerformLayout();
             this.panelBottom.ResumeLayout(false);

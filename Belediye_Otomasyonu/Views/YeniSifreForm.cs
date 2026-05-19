@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Belediye_Otomasyonu;
 
@@ -13,6 +13,7 @@ namespace Belediye_Otomasyonu.Views
         public YeniSifreForm(string kod, string tc, string email)
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             dogruKod = kod;
             gelenTc = tc;
             gelenEmail = email;

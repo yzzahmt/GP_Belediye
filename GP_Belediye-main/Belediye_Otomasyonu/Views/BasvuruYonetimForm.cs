@@ -63,7 +63,7 @@ namespace Belediye_Otomasyonu.Views
             this.Controls.Add(pnlFiltre);
 
             // Detay paneli (alt)
-            pnlDetay = new Panel { Dock = DockStyle.Bottom, Height = 210, BackColor = Color.White, Padding = new Padding(14), Visible = false };
+            pnlDetay = new Panel { Dock = DockStyle.Bottom, Height = 240, BackColor = Color.White, Padding = new Padding(14), Visible = false };
             pnlDetay.Paint += (s, e) => { using (var pen = new Pen(UiTheme.BorderSubtle)) e.Graphics.DrawLine(pen, 0, 0, pnlDetay.Width, 0); };
 
             // Kolon 3: Not Ekle (En sağ)
@@ -93,10 +93,9 @@ namespace Belediye_Otomasyonu.Views
             pnlDurum.Controls.Add(lblDurBas);
             pnlDetay.Controls.Add(pnlDurum);
 
-            // Kolon 4: Personel Ata (Yalnızca yöneticilere gösterilir)
+            // Kolon 4: Personel Ata (Personel ve Yönetici için)
             ComboBox cmbAtanDep = null;
             ComboBox cmbAtanPers = null;
-            if (isYonetici)
             {
                 var pnlAtama = new Panel { Dock = DockStyle.Right, Width = 260, Padding = new Padding(20,0,0,0) };
                 var lblAtaBas = new Label { Text = "Personel Ata:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Top, Height = 26 };
@@ -106,7 +105,7 @@ namespace Belediye_Otomasyonu.Views
                 cmbAtanPers = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top, Font = UiTheme.UiFont, Height = 32 };
                 UiTheme.ComboBoxStil(cmbAtanPers);
                 var pnlSpacer2 = new Panel { Dock = DockStyle.Top, Height = 8 };
-                var btnAtaYap = new Button { Text = "Personel Ata", Dock = DockStyle.Top, Height = 36 };
+                var btnAtaYap = new Button { Text = "✅ Personel Ata", Dock = DockStyle.Top, Height = 36 };
                 UiTheme.AccentButon(btnAtaYap);
 
                 pnlAtama.Controls.Add(btnAtaYap);
@@ -152,7 +151,8 @@ namespace Belediye_Otomasyonu.Views
                     var hata = BelediyeDbServisi.BasvuruPersonelAta(_seciliId, depStr, persKadi, _oturumKullaniciAdi);
                     if (hata != null) { MessageBox.Show(hata, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
 
-                    BelediyeDbServisi.SistemLoguEkle(_oturumKullaniciAdi, "Yonetici", "Başvuru #" + _seciliId + " atandı: " + persKadi);
+                    string rolLog = isYonetici ? "Yonetici" : "Personel";
+                    BelediyeDbServisi.SistemLoguEkle(_oturumKullaniciAdi, rolLog, "Başvuru #" + _seciliId + " atandı: " + persKadi);
                     MessageBox.Show("Başvuru başarıyla atandı ve personele bildirim gönderildi.", "Tamam", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Yukle(cmbDurum, cmbKat, txtAra);
                 };
@@ -230,7 +230,7 @@ namespace Belediye_Otomasyonu.Views
                     rtbDetay.Text = "Vatandaş: " + drv["VatandasAdi"] + "\nKategori: " + drv["Kategori"] +
                         "\nTarih: " + drv["KayitTarihi"] + "\n" + atananDetay + "\n" + (string.IsNullOrEmpty(notlar) ? "Not yok." : "Notlar:\n" + notlar);
 
-                    if (isYonetici && cmbAtanDep != null && cmbAtanPers != null)
+                    if (cmbAtanDep != null && cmbAtanPers != null)
                     {
                         string curDep = drv["AtananDepartman"]?.ToString();
                         string curPers = drv["AtananPersonelKadi"]?.ToString();

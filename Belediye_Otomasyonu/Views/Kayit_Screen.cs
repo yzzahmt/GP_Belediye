@@ -15,6 +15,7 @@ namespace Belediye_Otomasyonu
         public Kayit_Screen()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 
@@ -81,13 +82,8 @@ namespace Belediye_Otomasyonu
             UiTheme.AnaEylemButonu(btnKayit);
 
             var btnGeri = new Button { Text = "← Geri", Location = new Point(280, 448), Width = 260, Height = 46 };
-            btnGeri.FlatStyle = FlatStyle.Flat;
-            btnGeri.BackColor = Color.FromArgb(20, 255,255,255);
-            btnGeri.ForeColor = Color.FromArgb(170, 205, 240);
-            btnGeri.FlatAppearance.BorderColor = Color.FromArgb(50, 255,255,255);
-            btnGeri.FlatAppearance.BorderSize = 1;
             btnGeri.Font = UiTheme.UiFontBold;
-            btnGeri.Cursor = Cursors.Hand;
+            UiTheme.YuvarlakButonBorder(btnGeri, Color.FromArgb(20, 255, 255, 255), Color.FromArgb(170, 205, 240), Color.FromArgb(50, 255, 255, 255), 6);
             btnGeri.Click += (s, e) => { new Views.İlkGiris().Show(); this.Hide(); };
 
             btnKayit.Click += (s, e) => {
@@ -110,7 +106,8 @@ namespace Belediye_Otomasyonu
         {
             var pnl = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent, Padding = new Padding(6, 4, 6, 4) };
             pnl.Controls.Add(new Label { Text = etiket, Font = UiTheme.SmallBold, ForeColor = Color.FromArgb(165, 200, 240), AutoSize = true, Location = new Point(0, 2) });
-            var txt = new TextBox { Location = new Point(0, 22), Width = pnl.Width - 12, Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top, Height = 36, Font = UiTheme.UiFont, BackColor = Color.FromArgb(18, 35, 75), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            var txt = new TextBox { Location = new Point(0, 22), Width = pnl.Width - 12, Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top, Height = 36 };
+            UiTheme.TextBoxKaranlikStil(txt);
             pnl.Controls.Add(txt);
             tbl.Controls.Add(pnl, col, row);
             return txt;

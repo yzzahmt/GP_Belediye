@@ -1,4 +1,4 @@
-﻿namespace Belediye_Otomasyonu
+namespace Belediye_Otomasyonu
 {
     partial class Form1
     {
@@ -117,7 +117,7 @@
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(531, 450);
             this.Controls.Add(this.KullaniciAdi_txt);

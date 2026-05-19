@@ -289,13 +289,13 @@ namespace Belediye_Otomasyonu.Views
             // PersonelHomeScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(248)))));
-            this.ClientSize = new System.Drawing.Size(1085, 568);
+            this.ClientSize = new System.Drawing.Size(1200, 750);
             this.Controls.Add(this.panelChart);
             this.Controls.Add(this.tableStats);
             this.Controls.Add(this.tableUstBar);
-            this.MinimumSize = new System.Drawing.Size(800, 480);
+            this.MinimumSize = new System.Drawing.Size(1000, 650);
             this.Name = "PersonelHomeScreen";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Belediye — personel paneli";

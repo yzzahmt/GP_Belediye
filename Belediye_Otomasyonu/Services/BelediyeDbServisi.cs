@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using MySql.Data.MySqlClient;
 
@@ -16,6 +16,265 @@ namespace Belediye_Otomasyonu.Services
 
     internal static class BelediyeDbServisi
     {
+        static BelediyeDbServisi()
+        {
+            VeritabaniGuncelle();
+        }
+
+        public static void VeritabaniGuncelle()
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    bool hasDept = false;
+                    bool hasPers = false;
+                    using (var cmd = new MySqlCommand("SHOW COLUMNS FROM basvurular", con))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "AtananDepartman", StringComparison.OrdinalIgnoreCase))
+                                hasDept = true;
+                            if (string.Equals(col, "AtananPersonelKadi", StringComparison.OrdinalIgnoreCase))
+                                hasPers = true;
+                        }
+                    }
+
+                    if (!hasDept)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE basvurular ADD COLUMN AtananDepartman varchar(100) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasPers)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE basvurular ADD COLUMN AtananPersonelKadi varchar(50) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    // Borçlar tablosu oluştur
+                    using (var cmd = new MySqlCommand(@"
+CREATE TABLE IF NOT EXISTS borclar (
+    Id int NOT NULL AUTO_INCREMENT,
+    VatandasTC varchar(11) NOT NULL,
+    Aciklama varchar(200) NOT NULL,
+    Miktar decimal(10,2) NOT NULL,
+    SonOdemeTarihi date NOT NULL,
+    OdenmeTarihi datetime DEFAULT NULL,
+    Durum varchar(32) NOT NULL DEFAULT 'Odenmedi',
+    PRIMARY KEY (Id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Örnek borçları tohumla (seed)
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM borclar", con))
+                    {
+                        long count = Convert.ToInt64(cmd.ExecuteScalar());
+                        if (count == 0)
+                        {
+                            using (var cmdSeed = new MySqlCommand(@"
+INSERT INTO borclar (VatandasTC, Aciklama, Miktar, SonOdemeTarihi, Durum) VALUES
+('12345678912', 'Emlak Vergisi 2026 1. Taksit', 450.00, '2026-05-31', 'Odenmedi'),
+('12345678912', 'Çevre Temizlik Vergisi 2026', 180.50, '2026-06-30', 'Odenmedi'),
+('12345678912', 'Su Borcu Faturası - Nisan 2026', 220.00, '2026-05-25', 'Odenmedi'),
+('12345678912', 'İdari Para Cezası (Park İhlali)', 500.00, '2026-04-15', 'Odenmedi')", con))
+                            {
+                                cmdSeed.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    // Personel Mesajları Tablosu
+                    using (var cmd = new MySqlCommand(@"
+CREATE TABLE IF NOT EXISTS personel_mesajlari (
+    Id int NOT NULL AUTO_INCREMENT,
+    GonderenKadi varchar(50) NOT NULL,
+    AliciKadi varchar(50) NOT NULL,
+    Mesaj TEXT NOT NULL,
+    Tarih datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Personel Görevleri Tablosu
+                    using (var cmd = new MySqlCommand(@"
+CREATE TABLE IF NOT EXISTS personel_gorevleri (
+    Id int NOT NULL AUTO_INCREMENT,
+    Baslik varchar(200) NOT NULL,
+    Aciklama TEXT NULL,
+    AtananPersonelKadi varchar(50) NOT NULL,
+    VerenKadi varchar(50) NOT NULL,
+    Oncelik varchar(32) NOT NULL DEFAULT 'Orta',
+    Durum varchar(32) NOT NULL DEFAULT 'Baslanmadi',
+    OlusturmaTarihi datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Örnek görevler tohumla
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM personel_gorevleri", con))
+                    {
+                        long count = Convert.ToInt64(cmd.ExecuteScalar());
+                        if (count == 0)
+                        {
+                            using (var cmdSeed = new MySqlCommand(@"
+INSERT INTO personel_gorevleri (Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum) VALUES
+('Sokak Lambası Bakımı', 'Atatürk Mahallesi 5. Sokak üzerindeki arızalı sokak lambalarının değiştirilmesi.', 'personel1', 'admin', 'Yüksek', 'Baslanmadi'),
+('Park Düzenleme Çalışması', 'Belediye parkındaki çim biçme ve bank onarım işlemlerinin tamamlanması.', 'personel1', 'admin', 'Orta', 'DevamEdiyor'),
+('Evrak Arşivleme', '2025 yılına ait vatandaş başvuru dilekçelerinin taranarak dijital arşive aktarılması.', 'personel1', 'admin', 'Düşük', 'Tamamlandi')", con))
+                            {
+                                cmdSeed.ExecuteNonQuery();
+                            }
+                        }
+                    }
+
+                    // Örnek mesajlar tohumla
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM personel_mesajlari", con))
+                    {
+                        long count = Convert.ToInt64(cmd.ExecuteScalar());
+                        if (count == 0)
+                        {
+                            using (var cmdSeed = new MySqlCommand(@"
+INSERT INTO personel_mesajlari (GonderenKadi, AliciKadi, Mesaj) VALUES
+('admin', 'personel1', 'Merhaba Ahmet Bey, bugün atanan sokak lambası arıza görevini inceleyebilir misiniz?'),
+('personel1', 'admin', 'Merhaba sayın başkanım, ekip ile birlikte sokağa geçiyoruz. Öğleden sonra tamamlamış oluruz.'),
+('admin', 'GENEL', 'Arkadaşlar genel kurul toplantısı saat 14:00 da konferans salonunda yapılacaktır. Tüm personelin katılımı rica olunur.')", con))
+                            {
+                                cmdSeed.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    
+                    // Kategori tablosu güvencesi
+                    EnsureKategoriTablosu();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("VeritabaniGuncelle Hatası: " + ex.Message);
+            }
+        }
+
+        public static void EnsureKategoriTablosu()
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    using (var cmd = new MySqlCommand(@"
+CREATE TABLE IF NOT EXISTS kategoriler (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    KategoriAdi VARCHAR(100) UNIQUE NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Seeding
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM kategoriler", con))
+                    {
+                        long count = Convert.ToInt64(cmd.ExecuteScalar());
+                        if (count == 0)
+                        {
+                            string[] varsayilanlar = new[] {
+                                "İmar & Yapı", "Sosyal Yardım", "Şikayet", "Temizlik & Çevre", 
+                                "Ulaşım", "Su & Altyapı", "Vergi & Ruhsat", "Evlilik & Nüfus", "Diğer"
+                            };
+                            foreach (var kat in varsayilanlar)
+                            {
+                                using (var cmdIns = new MySqlCommand("INSERT IGNORE INTO kategoriler (KategoriAdi) VALUES (@kat)", con))
+                                {
+                                    cmdIns.Parameters.AddWithValue("@kat", kat);
+                                    cmdIns.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("EnsureKategoriTablosu Hatası: " + ex.Message);
+            }
+        }
+
+        public static DataTable KategorileriGetir()
+        {
+            EnsureKategoriTablosu();
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter("SELECT Id, KategoriAdi FROM kategoriler ORDER BY KategoriAdi ASC", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("KategorileriGetir Hatası: " + ex.Message);
+            }
+            return dt;
+        }
+
+        public static string KategoriEkle(string kategoriAdi)
+        {
+            if (string.IsNullOrWhiteSpace(kategoriAdi))
+                return "Kategori adı boş olamaz.";
+
+            EnsureKategoriTablosu();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("INSERT INTO kategoriler (KategoriAdi) VALUES (@kat)", con))
+                {
+                    cmd.Parameters.AddWithValue("@kat", kategoriAdi.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (MySqlException ex)
+            {
+                if (ex.Number == 1062) // Duplicate entry
+                    return "Bu kategori zaten mevcut.";
+                return "Hata: " + ex.Message;
+            }
+            catch (Exception ex)
+            {
+                return "Hata: " + ex.Message;
+            }
+        }
+
+        public static string KategoriSil(int id)
+        {
+            EnsureKategoriTablosu();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("DELETE FROM kategoriler WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return "Hata: " + ex.Message;
+            }
+        }
+
         /// <summary>Sadece personeller tablosunu kontrol eder (yönetici girişi için değil).</summary>
         public static bool PersonelGirisDogrula(string kullaniciAdi, string sifre)
         {
@@ -511,42 +770,62 @@ ON DUPLICATE KEY UPDATE
         }
 
         /// <summary>Tüm başvuruları vatandaş ad/soyadı ile birlikte getirir (personel ekranı için).</summary>
-        public static DataTable BasvuruListesiDetayliGetir(string kategoriFiltre = null, string durumFiltre = null, string aramaMetni = null)
+        public static DataTable BasvuruListesiDetayliGetir(string kategoriFiltre = null, string durumFiltre = null, string aramaMetni = null, string personelKadi = null)
         {
             var dt = new DataTable();
             try
             {
+                // "Tümü", "Tumu", "Tüm", "Tum", boş → filtre yok
+                bool katAktif = !string.IsNullOrWhiteSpace(kategoriFiltre) && !FiltreSifirla(kategoriFiltre);
+                bool durAktif = !string.IsNullOrWhiteSpace(durumFiltre)   && !FiltreSifirla(durumFiltre);
+
                 string sql = @"
 SELECT b.Id, 
        COALESCE(CONCAT(k.ad,' ',k.soyad), b.VatandasTC, 'Anonim') AS VatandasAdi,
        b.VatandasTC,
-       b.Kategori, b.Konu, b.Aciklama, b.Durum, b.KayitTarihi
+       b.Kategori, b.Konu, b.Aciklama, b.Durum, b.KayitTarihi,
+       COALESCE(b.AtananDepartman, '') AS AtananDepartman,
+       COALESCE(b.AtananPersonelKadi, '') AS AtananPersonelKadi,
+       COALESCE(CONCAT(p.Ad, ' ', p.Soyad), b.AtananPersonelKadi, '') AS AtananPersonelAdi
 FROM basvurular b
 LEFT JOIN kullanicilar k ON k.tc = b.VatandasTC
+LEFT JOIN personeller p ON p.KullaniciAdi = b.AtananPersonelKadi
 WHERE 1=1";
-                if (!string.IsNullOrWhiteSpace(kategoriFiltre) && kategoriFiltre != "Tümü")
+                if (katAktif)
                     sql += " AND b.Kategori = @kat";
-                if (!string.IsNullOrWhiteSpace(durumFiltre) && durumFiltre != "Tümü")
+                if (durAktif)
                     sql += " AND b.Durum = @dur";
                 if (!string.IsNullOrWhiteSpace(aramaMetni))
                     sql += " AND (b.Konu LIKE @ara OR b.VatandasTC LIKE @ara OR k.ad LIKE @ara OR k.soyad LIKE @ara)";
+                if (!string.IsNullOrWhiteSpace(personelKadi))
+                    sql += " AND b.AtananPersonelKadi = @persKadi";
                 sql += " ORDER BY b.KayitTarihi DESC";
 
                 using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
                 using (var da = new MySqlDataAdapter(sql, con))
                 {
-                    if (!string.IsNullOrWhiteSpace(kategoriFiltre) && kategoriFiltre != "Tümü")
-                        da.SelectCommand.Parameters.AddWithValue("@kat", kategoriFiltre);
-                    if (!string.IsNullOrWhiteSpace(durumFiltre) && durumFiltre != "Tümü")
-                        da.SelectCommand.Parameters.AddWithValue("@dur", durumFiltre);
+                    if (katAktif)
+                        da.SelectCommand.Parameters.AddWithValue("@kat", kategoriFiltre.Trim());
+                    if (durAktif)
+                        da.SelectCommand.Parameters.AddWithValue("@dur", durumFiltre.Trim());
                     if (!string.IsNullOrWhiteSpace(aramaMetni))
                         da.SelectCommand.Parameters.AddWithValue("@ara", "%" + aramaMetni.Trim() + "%");
+                    if (!string.IsNullOrWhiteSpace(personelKadi))
+                        da.SelectCommand.Parameters.AddWithValue("@persKadi", personelKadi.Trim());
                     con.Open();
                     da.Fill(dt);
                 }
             }
             catch { }
             return dt;
+        }
+
+        /// <summary>Filtre değerinin "tümü" anlamına gelip gelmediğini kontrol eder.</summary>
+        private static bool FiltreSifirla(string deger)
+        {
+            if (string.IsNullOrWhiteSpace(deger)) return true;
+            string d = deger.Trim().ToLowerInvariant();
+            return d == "tümü" || d == "tumu" || d == "tüm" || d == "tum" || d == "hepsi" || d == "all";
         }
 
         /// <summary>Tek bir başvurunun detay bilgilerini getirir.</summary>
@@ -559,9 +838,12 @@ WHERE 1=1";
                 using (var da = new MySqlDataAdapter(@"
 SELECT b.Id, b.Konu, b.Kategori, b.Aciklama, b.Durum, b.VatandasTC, b.KayitTarihi,
        COALESCE(CONCAT(k.ad,' ',k.soyad), b.VatandasTC, 'Anonim') AS VatandasAdi,
-       k.e_Mail AS VatandasEmail
+       k.e_Mail AS VatandasEmail,
+       b.AtananDepartman, b.AtananPersonelKadi,
+       COALESCE(CONCAT(p.Ad, ' ', p.Soyad), b.AtananPersonelKadi, 'Atanmadı') AS AtananPersonelAdi
 FROM basvurular b
 LEFT JOIN kullanicilar k ON k.tc = b.VatandasTC
+LEFT JOIN personeller p ON p.KullaniciAdi = b.AtananPersonelKadi
 WHERE b.Id = @id LIMIT 1", con))
                 {
                     da.SelectCommand.Parameters.AddWithValue("@id", id);
@@ -667,7 +949,10 @@ VALUES (@b, @i, @g, @a)", con))
                 using (var da = new MySqlDataAdapter(@"
 SELECT Id, Baslik, Icerik, GonderenKadi, GonderimTarihi, Okundu
 FROM bildirimler
-WHERE AliciKadi IS NULL OR AliciKadi = @k
+WHERE AliciKadi IS NULL 
+   OR AliciKadi = @k 
+   OR (AliciKadi = 'TUM_VATANDAS' AND EXISTS(SELECT 1 FROM kullanicilar WHERE tc=@k))
+   OR (AliciKadi = 'TUM_PERSONEL' AND NOT EXISTS(SELECT 1 FROM kullanicilar WHERE tc=@k))
 ORDER BY GonderimTarihi DESC", con))
                 {
                     da.SelectCommand.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
@@ -862,7 +1147,34 @@ WHERE (AliciKadi IS NULL OR AliciKadi = @k) AND Okundu=0", con))
             catch { }
             return dt;
         }
+        public static DataTable SistemLoglariGetir(string arama)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    string sql = @"
+SELECT Id, Kullanici AS KullaniciAdi, Rol, Islem, Tarih 
+FROM sistem_logu";
+                    if (!string.IsNullOrWhiteSpace(arama))
+                    {
+                        sql += " WHERE Kullanici LIKE @a OR Rol LIKE @a OR Islem LIKE @a";
+                    }
+                    sql += " ORDER BY Tarih DESC LIMIT 250";
 
+                    using (var da = new MySqlDataAdapter(sql, con))
+                    {
+                        if (!string.IsNullOrWhiteSpace(arama))
+                            da.SelectCommand.Parameters.AddWithValue("@a", "%" + arama.Trim() + "%");
+                        con.Open();
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
         // ── Rapor Metodları ─────────────────────────────────────────────────────────
 
         /// <summary>Kategori bazında başvuru sayılarını getirir.</summary>
@@ -984,6 +1296,741 @@ VALUES (@k, @kat, @a, @tc)", con))
                     cmd.Parameters.AddWithValue("@id", id);
                     con.Open();
                     cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static DataTable DepartmanlariGetir()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(
+                    "SELECT DISTINCT Departman FROM personeller WHERE Departman IS NOT NULL AND Departman <> '' AND Aktif = 1 ORDER BY Departman", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static DataTable DepartmanPersonelleriniGetir(string departman)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    string sql = string.IsNullOrWhiteSpace(departman) || departman == "Tümü" || departman == "(Tümü)"
+                        ? "SELECT KullaniciAdi, CONCAT(Ad, ' ', Soyad) AS AdSoyad FROM personeller WHERE Aktif = 1 ORDER BY Ad"
+                        : "SELECT KullaniciAdi, CONCAT(Ad, ' ', Soyad) AS AdSoyad FROM personeller WHERE Departman = @dep AND Aktif = 1 ORDER BY Ad";
+                    using (var da = new MySqlDataAdapter(sql, con))
+                    {
+                        if (!string.IsNullOrWhiteSpace(departman) && departman != "Tümü" && departman != "(Tümü)")
+                            da.SelectCommand.Parameters.AddWithValue("@dep", departman.Trim());
+                        con.Open();
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static string BasvuruPersonelAta(int basvuruId, string departman, string personelKadi, string gonderenYonetici)
+        {
+            if (string.IsNullOrWhiteSpace(personelKadi))
+                return "Personel seçimi zorunludur.";
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    string konu = "Başvuru";
+                    using (var cmdK = new MySqlCommand("SELECT Konu FROM basvurular WHERE Id=@id LIMIT 1", con))
+                    {
+                        cmdK.Parameters.AddWithValue("@id", basvuruId);
+                        var obj = cmdK.ExecuteScalar();
+                        if (obj != null && obj != DBNull.Value)
+                            konu = obj.ToString();
+                    }
+
+                    using (var cmd = new MySqlCommand(
+                        "UPDATE basvurular SET AtananDepartman=@d, AtananPersonelKadi=@p WHERE Id=@id", con))
+                    {
+                        cmd.Parameters.AddWithValue("@id", basvuruId);
+                        cmd.Parameters.AddWithValue("@d", string.IsNullOrWhiteSpace(departman) ? (object)DBNull.Value : departman.Trim());
+                        cmd.Parameters.AddWithValue("@p", personelKadi.Trim());
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string baslik = "Yeni Başvuru Atandı (No: " + basvuruId + ")";
+                    string icerik = "Size yeni bir başvuru atandı. Konu: " + konu;
+                    using (var cmdN = new MySqlCommand(@"
+                        INSERT INTO bildirimler (Baslik, Icerik, GonderenKadi, AliciKadi)
+                        VALUES (@b, @i, @g, @a)", con))
+                    {
+                        cmdN.Parameters.AddWithValue("@b", baslik);
+                        cmdN.Parameters.AddWithValue("@i", icerik);
+                        cmdN.Parameters.AddWithValue("@g", gonderenYonetici ?? "Sistem");
+                        cmdN.Parameters.AddWithValue("@a", personelKadi.Trim());
+                        cmdN.ExecuteNonQuery();
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+        // ── Gelismiş Bildirim Yonetim Metodları ───────────────────────────────
+
+        public static string BildirimSil(int bildirimId)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("DELETE FROM bildirimler WHERE Id = @id", con))
+                {
+                    cmd.Parameters.AddWithValue("@id", bildirimId);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string TumBildirimleriTemizle(string kullaniciAdi)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("DELETE FROM bildirimler WHERE AliciKadi = @k OR AliciKadi IS NULL", con))
+                {
+                    cmd.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        // ── Detaylı Vatandas Profil Yonetimi ────────────────────────────────
+
+        public static string VatandasTamProfilGuncelle(string tc, string ad, string soyad, string email, string kadi, string telefon, string adres, string yeniSifre = null)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+
+                    // Check if columns exist first (to make it robust)
+                    bool hasTel = false;
+                    bool hasAdres = false;
+                    using (var cmdCol = new MySqlCommand("SHOW COLUMNS FROM kullanicilar", con))
+                    using (var reader = cmdCol.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "telefon", StringComparison.OrdinalIgnoreCase)) hasTel = true;
+                            if (string.Equals(col, "adres", StringComparison.OrdinalIgnoreCase)) hasAdres = true;
+                        }
+                    }
+
+                    if (!hasTel)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE kullanicilar ADD COLUMN telefon varchar(20) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasAdres)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE kullanicilar ADD COLUMN adres text DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    string sql = @"
+UPDATE kullanicilar 
+SET ad=@a, soyad=@s, e_Mail=@e, KullaniciAdi=@k, telefon=@t, adres=@adr";
+                    if (!string.IsNullOrWhiteSpace(yeniSifre))
+                    {
+                        sql += ", sifre=@p";
+                    }
+                    sql += " WHERE tc=@tc";
+
+                    using (var cmd = new MySqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@tc", tc.Trim());
+                        cmd.Parameters.AddWithValue("@a", ad.Trim());
+                        cmd.Parameters.AddWithValue("@s", soyad.Trim());
+                        cmd.Parameters.AddWithValue("@e", email.Trim());
+                        cmd.Parameters.AddWithValue("@k", kadi.Trim());
+                        cmd.Parameters.AddWithValue("@t", string.IsNullOrWhiteSpace(telefon) ? (object)DBNull.Value : telefon.Trim());
+                        cmd.Parameters.AddWithValue("@adr", string.IsNullOrWhiteSpace(adres) ? (object)DBNull.Value : adres.Trim());
+                        if (!string.IsNullOrWhiteSpace(yeniSifre))
+                        {
+                            cmd.Parameters.AddWithValue("@p", yeniSifre);
+                        }
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static DataTable VatandasTamProfilGetir(string tc)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    // Column robustness check
+                    bool hasTel = false;
+                    bool hasAdres = false;
+                    using (var cmdCol = new MySqlCommand("SHOW COLUMNS FROM kullanicilar", con))
+                    using (var reader = cmdCol.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "telefon", StringComparison.OrdinalIgnoreCase)) hasTel = true;
+                            if (string.Equals(col, "adres", StringComparison.OrdinalIgnoreCase)) hasAdres = true;
+                        }
+                    }
+                    if (!hasTel)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE kullanicilar ADD COLUMN telefon varchar(20) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasAdres)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE kullanicilar ADD COLUMN adres text DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    using (var da = new MySqlDataAdapter("SELECT ad, soyad, tc, e_Mail, KullaniciAdi, telefon, adres FROM kullanicilar WHERE tc=@tc LIMIT 1", con))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue("@tc", tc.Trim());
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        // ── Gelişmiş Raporlama & Analiz Metodları ────────────────────────────
+
+        public static DataTable DepartmanBazliPerformansRaporu()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+SELECT 
+    COALESCE(b.AtananDepartman, 'Atanmamış') AS Departman,
+    COUNT(*) AS ToplamTalep,
+    SUM(CASE WHEN b.Durum = 'Tamamlandi' THEN 1 ELSE 0 END) AS Tamamlanan,
+    SUM(CASE WHEN b.Durum = 'Islemde' THEN 1 ELSE 0 END) AS Islemdeki,
+    SUM(CASE WHEN b.Durum = 'Beklemede' THEN 1 ELSE 0 END) AS Bekleyen,
+    ROUND(SUM(CASE WHEN b.Durum = 'Tamamlandi' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS BasariOrani
+FROM basvurular b
+GROUP BY b.AtananDepartman
+ORDER BY ToplamTalep DESC", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static DataTable PersonelBazliPerformansRaporu()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+SELECT 
+    COALESCE(CONCAT(p.Ad, ' ', p.Soyad), b.AtananPersonelKadi, 'Atanmamış') AS Personel,
+    COALESCE(p.Departman, '-') AS Departman,
+    COUNT(*) AS ToplamTalep,
+    SUM(CASE WHEN b.Durum = 'Tamamlandi' THEN 1 ELSE 0 END) AS Tamamlanan,
+    ROUND(SUM(CASE WHEN b.Durum = 'Tamamlandi' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS BitirmeOrani
+FROM basvurular b
+LEFT JOIN personeller p ON p.KullaniciAdi = b.AtananPersonelKadi
+GROUP BY b.AtananPersonelKadi, p.Ad, p.Soyad, p.Departman
+ORDER BY ToplamTalep DESC", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static string SistemLoglariniTemizle()
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("TRUNCATE TABLE sistem_logu", con))
+                {
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        // ── Finans ve Borç Tahsilat Metodları ──────────────────────────────
+
+        public static DataTable VatandasBorclariniGetir(string tc)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter("SELECT Id, Aciklama, Miktar, SonOdemeTarihi, OdenmeTarihi, Durum FROM borclar WHERE VatandasTC=@tc ORDER BY Durum ASC, SonOdemeTarihi DESC", con))
+                {
+                    da.SelectCommand.Parameters.AddWithValue("@tc", tc.Trim());
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static string BorcOde(int id)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("UPDATE borclar SET Durum='Odendi', OdenmeTarihi=NOW() WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static DataTable TumBorclariGetirDetayli()
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+SELECT b.Id, b.VatandasTC, COALESCE(CONCAT(k.ad, ' ', k.soyad), 'Kayıtsız Vatandaş') AS VatandasAdi, b.Aciklama, b.Miktar, b.SonOdemeTarihi, b.OdenmeTarihi, b.Durum 
+FROM borclar b 
+LEFT JOIN kullanicilar k ON b.VatandasTC = k.tc 
+ORDER BY b.Id DESC", con))
+                {
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static string BorcEkle(string tc, string aciklama, decimal miktar, DateTime sonOdemeTarihi)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("INSERT INTO borclar (VatandasTC, Aciklama, Miktar, SonOdemeTarihi, Durum) VALUES (@tc, @a, @m, @s, 'Odenmedi')", con))
+                {
+                    cmd.Parameters.AddWithValue("@tc", tc.Trim());
+                    cmd.Parameters.AddWithValue("@a", aciklama.Trim());
+                    cmd.Parameters.AddWithValue("@m", miktar);
+                    cmd.Parameters.AddWithValue("@s", sonOdemeTarihi);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static void FinansOzetiGetir(out decimal toplamTahsilat, out decimal bekleyenAlacak)
+        {
+            toplamTahsilat = 0;
+            bekleyenAlacak = 0;
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    using (var cmd1 = new MySqlCommand("SELECT SUM(Miktar) FROM borclar WHERE Durum='Odendi'", con))
+                    {
+                        var res = cmd1.ExecuteScalar();
+                        if (res != DBNull.Value && res != null) toplamTahsilat = Convert.ToDecimal(res);
+                    }
+                    using (var cmd2 = new MySqlCommand("SELECT SUM(Miktar) FROM borclar WHERE Durum='Odenmedi'", con))
+                    {
+                        var res = cmd2.ExecuteScalar();
+                        if (res != DBNull.Value && res != null) bekleyenAlacak = Convert.ToDecimal(res);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        public static DataTable BorcDetayGetir(int id)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+SELECT b.Id, b.VatandasTC, COALESCE(CONCAT(k.ad, ' ', k.soyad), 'Kayıtsız Vatandaş') AS VatandasAdi, b.Aciklama, b.Miktar, b.SonOdemeTarihi, b.OdenmeTarihi, b.Durum 
+FROM borclar b 
+LEFT JOIN kullanicilar k ON b.VatandasTC = k.tc 
+WHERE b.Id = @id LIMIT 1", con))
+                {
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        // ── Personel Görev Takibi Metodları ─────────────────────────────────────────
+
+        public static DataTable PersonelGorevleriGetir(string kadi, bool isYonetici)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    string sql = isYonetici
+                        ? "SELECT Id, Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum, OlusturmaTarihi FROM personel_gorevleri ORDER BY Id DESC"
+                        : "SELECT Id, Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum, OlusturmaTarihi FROM personel_gorevleri WHERE AtananPersonelKadi=@k OR VerenKadi=@k ORDER BY Id DESC";
+
+                    using (var da = new MySqlDataAdapter(sql, con))
+                    {
+                        if (!isYonetici)
+                            da.SelectCommand.Parameters.AddWithValue("@k", kadi);
+                        con.Open();
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static string PersonelGoreviEkle(string baslik, string aciklama, string atananKadi, string verenKadi, string oncelik)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "INSERT INTO personel_gorevleri (Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum) VALUES (@b, @a, @at, @v, @o, 'Baslanmadi')", con))
+                {
+                    cmd.Parameters.AddWithValue("@b", baslik.Trim());
+                    cmd.Parameters.AddWithValue("@a", aciklama?.Trim() ?? "");
+                    cmd.Parameters.AddWithValue("@at", atananKadi.Trim());
+                    cmd.Parameters.AddWithValue("@v", verenKadi.Trim());
+                    cmd.Parameters.AddWithValue("@o", oncelik.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string PersonelGorevDurumuGuncelle(int id, string durum)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("UPDATE personel_gorevleri SET Durum=@d WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@d", durum);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string PersonelGorevSil(int id)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("DELETE FROM personel_gorevleri WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        // ── Personel İçi Mesajlaşma (Chat) Metodları ─────────────────────────────────
+
+        public static string MesajGonder(string gonderen, string alici, string mesaj)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "INSERT INTO personel_mesajlari (GonderenKadi, AliciKadi, Mesaj) VALUES (@g, @a, @m)", con))
+                {
+                    cmd.Parameters.AddWithValue("@g", gonderen.Trim());
+                    cmd.Parameters.AddWithValue("@a", alici.Trim());
+                    cmd.Parameters.AddWithValue("@m", mesaj.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static DataTable MesajlariGetir(string kadi1, string kadi2)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    string sql;
+                    if (kadi2 == "GENEL")
+                    {
+                        sql = "SELECT Id, GonderenKadi, AliciKadi, Mesaj, Tarih FROM personel_mesajlari WHERE AliciKadi='GENEL' ORDER BY Tarih ASC LIMIT 100";
+                    }
+                    else
+                    {
+                        sql = "SELECT Id, GonderenKadi, AliciKadi, Mesaj, Tarih FROM personel_mesajlari WHERE (GonderenKadi=@k1 AND AliciKadi=@k2) OR (GonderenKadi=@k2 AND AliciKadi=@k1) ORDER BY Tarih ASC LIMIT 100";
+                    }
+
+                    using (var da = new MySqlDataAdapter(sql, con))
+                    {
+                        if (kadi2 != "GENEL")
+                        {
+                            da.SelectCommand.Parameters.AddWithValue("@k1", kadi1);
+                            da.SelectCommand.Parameters.AddWithValue("@k2", kadi2);
+                        }
+                        con.Open();
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static DataTable TumKullanicilarListesiGetir(string oturumKadi)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+                    SELECT KullaniciAdi, CONCAT(Ad, ' ', Soyad) AS AdSoyad, COALESCE(Departman, 'Personel') AS Detay, 'Personel' AS Rol FROM personeller WHERE Aktif=1 AND KullaniciAdi != @ok
+                    UNION
+                    SELECT KullaniciAdi, CONCAT(Ad, ' ', Soyad) AS AdSoyad, COALESCE(Unvan, 'Yönetici') AS Detay, 'Yonetici' AS Rol FROM yoneticiler WHERE Aktif=1 AND KullaniciAdi != @ok", con))
+                {
+                    da.SelectCommand.Parameters.AddWithValue("@ok", oturumKadi);
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        // ── Personel Profil Metodları ─────────────────────────────────────────
+
+        /// <summary>Personel kendi profil bilgilerini getirir (personeller tablosu).</summary>
+        public static DataTable PersonelTamProfilGetir(string kullaniciAdi)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    // Önce personeller tablosunda telefon/adres kolonlarını güvence altına al
+                    bool hasTel = false, hasAdres = false, hasEmail = false;
+                    using (var cmdCol = new MySqlCommand("SHOW COLUMNS FROM personeller", con))
+                    using (var reader = cmdCol.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "Telefon", StringComparison.OrdinalIgnoreCase)) hasTel = true;
+                            if (string.Equals(col, "Adres", StringComparison.OrdinalIgnoreCase)) hasAdres = true;
+                            if (string.Equals(col, "Email", StringComparison.OrdinalIgnoreCase)) hasEmail = true;
+                        }
+                    }
+                    if (!hasTel)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE personeller ADD COLUMN Telefon varchar(20) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasAdres)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE personeller ADD COLUMN Adres text DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasEmail)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE personeller ADD COLUMN Email varchar(100) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    using (var da = new MySqlDataAdapter(
+                        "SELECT KullaniciAdi, Ad, Soyad, COALESCE(Email,'') AS Email, COALESCE(Telefon,'') AS Telefon, COALESCE(Adres,'') AS Adres, COALESCE(Departman,'') AS Departman FROM personeller WHERE KullaniciAdi=@k LIMIT 1", con))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Personel kendi bilgilerini günceller (isteğe bağlı şifre dahil).</summary>
+        public static string PersonelTamProfilGuncelle(string kullaniciAdi, string ad, string soyad, string email, string telefon, string adres, string yeniSifre = null)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    string sql = @"UPDATE personeller SET Ad=@a, Soyad=@s, Email=@e, Telefon=@t, Adres=@adr";
+                    if (!string.IsNullOrWhiteSpace(yeniSifre))
+                        sql += ", Sifre=@p";
+                    sql += " WHERE KullaniciAdi=@k";
+
+                    using (var cmd = new MySqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        cmd.Parameters.AddWithValue("@a", (ad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@s", (soyad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@e", (email ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@t", string.IsNullOrWhiteSpace(telefon) ? (object)DBNull.Value : telefon.Trim());
+                        cmd.Parameters.AddWithValue("@adr", string.IsNullOrWhiteSpace(adres) ? (object)DBNull.Value : adres.Trim());
+                        if (!string.IsNullOrWhiteSpace(yeniSifre))
+                            cmd.Parameters.AddWithValue("@p", yeniSifre);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        /// <summary>Yönetici kendi profil bilgilerini getirir (yoneticiler tablosu).</summary>
+        public static DataTable YoneticiTamProfilGetir(string kullaniciAdi)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    bool hasTel = false, hasAdres = false, hasEmail = false;
+                    using (var cmdCol = new MySqlCommand("SHOW COLUMNS FROM yoneticiler", con))
+                    using (var reader = cmdCol.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string col = reader.GetString(0);
+                            if (string.Equals(col, "Telefon", StringComparison.OrdinalIgnoreCase)) hasTel = true;
+                            if (string.Equals(col, "Adres", StringComparison.OrdinalIgnoreCase)) hasAdres = true;
+                            if (string.Equals(col, "Email", StringComparison.OrdinalIgnoreCase)) hasEmail = true;
+                        }
+                    }
+                    if (!hasTel)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE yoneticiler ADD COLUMN Telefon varchar(20) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasAdres)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE yoneticiler ADD COLUMN Adres text DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+                    if (!hasEmail)
+                    {
+                        using (var cmd = new MySqlCommand("ALTER TABLE yoneticiler ADD COLUMN Email varchar(100) DEFAULT NULL", con))
+                            cmd.ExecuteNonQuery();
+                    }
+
+                    using (var da = new MySqlDataAdapter(
+                        "SELECT KullaniciAdi, Ad, Soyad, COALESCE(Email,'') AS Email, COALESCE(Telefon,'') AS Telefon, COALESCE(Adres,'') AS Adres, COALESCE(Unvan,'') AS Unvan FROM yoneticiler WHERE KullaniciAdi=@k LIMIT 1", con))
+                    {
+                        da.SelectCommand.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        /// <summary>Yönetici kendi bilgilerini günceller.</summary>
+        public static string YoneticiTamProfilGuncelle(string kullaniciAdi, string ad, string soyad, string email, string telefon, string adres, string yeniSifre = null)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    con.Open();
+                    string sql = @"UPDATE yoneticiler SET Ad=@a, Soyad=@s, Email=@e, Telefon=@t, Adres=@adr";
+                    if (!string.IsNullOrWhiteSpace(yeniSifre))
+                        sql += ", Sifre=@p";
+                    sql += " WHERE KullaniciAdi=@k";
+
+                    using (var cmd = new MySqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@k", kullaniciAdi.Trim());
+                        cmd.Parameters.AddWithValue("@a", (ad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@s", (soyad ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@e", (email ?? "").Trim());
+                        cmd.Parameters.AddWithValue("@t", string.IsNullOrWhiteSpace(telefon) ? (object)DBNull.Value : telefon.Trim());
+                        cmd.Parameters.AddWithValue("@adr", string.IsNullOrWhiteSpace(adres) ? (object)DBNull.Value : adres.Trim());
+                        if (!string.IsNullOrWhiteSpace(yeniSifre))
+                            cmd.Parameters.AddWithValue("@p", yeniSifre);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
                 return null;
             }

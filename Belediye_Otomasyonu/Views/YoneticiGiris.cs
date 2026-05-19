@@ -12,6 +12,7 @@ namespace Belediye_Otomasyonu.Views
         public YoneticiGiris()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 
@@ -66,12 +67,7 @@ namespace Belediye_Otomasyonu.Views
             var txtSifre = Txt(28, 166); txtSifre.UseSystemPasswordChar = true;
 
             var btnGiris = new Button { Text = "  Giriş Yap", Location = new Point(28, 224), Width = 308, Height = 46 };
-            btnGiris.FlatStyle = FlatStyle.Flat;
-            btnGiris.BackColor = Color.FromArgb(120, 60, 220);
-            btnGiris.ForeColor = Color.White;
-            btnGiris.FlatAppearance.BorderSize = 0;
-            btnGiris.Font = UiTheme.UiFontBold;
-            btnGiris.Cursor = Cursors.Hand;
+            UiTheme.YuvarlakButon(btnGiris, Color.FromArgb(120, 60, 220), Color.White, 6);
 
             var sep = new Label { Text = "──────────────────────────────", Font = new Font("Segoe UI", 7f), ForeColor = Color.FromArgb(60, 255,255,255), AutoSize = true, Location = new Point(28, 282) };
 
@@ -79,8 +75,8 @@ namespace Belediye_Otomasyonu.Views
             lnkSifre.LinkColor = Color.FromArgb(180, 160, 240);
             lnkSifre.LinkClicked += (s, e) => { using (var f = new SifremiUnuttumForm()) f.ShowDialog(this); };
 
-            var btnGeri = new Button { Text = "← Geri", Location = new Point(206, 306), Width = 130, Height = 40, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(20, 255,255,255), ForeColor = Color.FromArgb(200, 180, 230), Font = UiTheme.UiFont, Cursor = Cursors.Hand };
-            btnGeri.FlatAppearance.BorderColor = Color.FromArgb(50, 255,255,255); btnGeri.FlatAppearance.BorderSize = 1;
+            var btnGeri = new Button { Text = "← Geri", Location = new Point(206, 306), Width = 130, Height = 40 };
+            UiTheme.YuvarlakButonBorder(btnGeri, Color.Transparent, Color.FromArgb(200, 180, 230), Color.FromArgb(80, 255, 255, 255), 6);
             btnGeri.Click += (s, e) => { new PersonelGiris().Show(); this.Hide(); };
 
             btnGiris.Click += (s, e) => {
@@ -99,7 +95,12 @@ namespace Belediye_Otomasyonu.Views
         }
 
         private TextBox Txt(int x, int y) {
-            return new TextBox { Location = new Point(x, y), Width = 308, Height = 36, Font = UiTheme.UiFont, BackColor = Color.FromArgb(30, 20, 60), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            var t = new TextBox { Location = new Point(x, y), Width = 308, Height = 36 };
+            UiTheme.TextBoxKaranlikStil(t);
+            t.BackColor = Color.FromArgb(30, 20, 60);
+            t.GotFocus += (s, e) => t.BackColor = Color.FromArgb(40, 25, 80);
+            t.LostFocus += (s, e) => t.BackColor = Color.FromArgb(30, 20, 60);
+            return t;
         }
         private void FillRounded(Graphics g, Brush b, Rectangle r, int rad) {
             int d = rad*2; using (var p = new GraphicsPath()) { p.AddArc(r.X,r.Y,d,d,180,90); p.AddArc(r.Right-d,r.Y,d,d,270,90); p.AddArc(r.Right-d,r.Bottom-d,d,d,0,90); p.AddArc(r.X,r.Bottom-d,d,d,90,90); p.CloseFigure(); g.FillPath(b,p); }

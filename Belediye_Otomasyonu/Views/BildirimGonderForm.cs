@@ -17,6 +17,7 @@ namespace Belediye_Otomasyonu.Views
         public BildirimGonderForm(string oturumKadi)
         {
             _oturumKadi = oturumKadi ?? "";
+            this.AutoScaleMode = AutoScaleMode.None;
             InitUI();
         }
 
@@ -64,12 +65,20 @@ namespace Belediye_Otomasyonu.Views
             // Alıcı
             var lblAlici = new Label { Text = "Alıcı", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Fill, TextAlign = ContentAlignment.BottomLeft };
             cmbAlici = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList, Font = UiTheme.UiFont, BackColor = Color.White, FlatStyle = FlatStyle.Flat };
-            cmbAlici.Items.Add("— Tüm Personeller —");
+            
+            cmbAlici.Items.Add(new TargetItem("TUM_PERSONEL", "📢 Tüm Personeller"));
+            cmbAlici.Items.Add(new TargetItem("TUM_VATANDAS", "📢 Tüm Vatandaşlar"));
+            cmbAlici.Items.Add(new TargetItem(null, "📢 Herkes (Tüm Kullanıcılar)"));
+            
             try
             {
-                var dt = BelediyeDbServisi.PersonelListesiAdiyla();
-                foreach (System.Data.DataRow row in dt.Rows)
-                    cmbAlici.Items.Add(new PersonelItem(row["KullaniciAdi"].ToString(), row["AdSoyad"].ToString()));
+                var dtPers = BelediyeDbServisi.PersonelListesiAdiyla();
+                foreach (System.Data.DataRow row in dtPers.Rows)
+                    cmbAlici.Items.Add(new TargetItem(row["KullaniciAdi"].ToString(), "👤 [Personel] " + row["AdSoyad"].ToString()));
+                
+                var dtVat = BelediyeDbServisi.VatandasListesiGetir();
+                foreach (System.Data.DataRow row in dtVat.Rows)
+                    cmbAlici.Items.Add(new TargetItem(row["tc"].ToString(), "👤 [Vatandaş] " + row["ad"].ToString() + " " + row["soyad"].ToString()));
             }
             catch { }
             cmbAlici.SelectedIndex = 0;
@@ -118,7 +127,7 @@ namespace Belediye_Otomasyonu.Views
             var pnlHeader = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = UiTheme.HeaderBg };
             var sepHeader = new Panel { Dock = DockStyle.Bottom, Height = 3, BackColor = UiTheme.Accent };
             var lblHdr = new Label { Text = "📢  Bildirim Gönder", Font = new Font("Segoe UI", 14f, FontStyle.Bold), ForeColor = Color.White, AutoSize = true, Location = new Point(24, 14) };
-            var lblSub = new Label { Text = "Tüm personellere veya belirli bir personele bildirim gönderin.", Font = UiTheme.SmallFont, ForeColor = Color.FromArgb(180, 200, 230), AutoSize = true, Location = new Point(25, 42) };
+            var lblSub = new Label { Text = "Personellere, vatandaşlara veya belirli kişilere duyuru/bildirim gönderin.", Font = UiTheme.SmallFont, ForeColor = Color.FromArgb(180, 200, 230), AutoSize = true, Location = new Point(25, 42) };
             pnlHeader.Controls.AddRange(new Control[] { lblHdr, lblSub, sepHeader });
             this.Controls.Add(pnlHeader); // 3. Top
             
@@ -142,23 +151,26 @@ namespace Belediye_Otomasyonu.Views
             }
 
             string alici = null;
-            if (cmbAlici.SelectedIndex > 0 && cmbAlici.SelectedItem is PersonelItem pi)
-                alici = pi.KullaniciAdi;
+            string hedefAciklama = "herkese";
+            if (cmbAlici.SelectedItem is TargetItem ti)
+            {
+                alici = ti.Value;
+                hedefAciklama = ti.Display;
+            }
 
             string hata = BelediyeDbServisi.BildirimGonder(_oturumKadi, alici, baslik, icerik);
             if (hata != null) { MessageBox.Show("Gönderim hatası: " + hata, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
 
-            string hedef = alici == null ? "tüm personellere" : $"'{alici}' adlı personele";
-            MessageBox.Show($"Bildirim {hedef} başarıyla gönderildi.", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Bildirim '{hedefAciklama}' hedefine başarıyla gönderildi.", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.Close();
         }
 
-        private class PersonelItem
+        private class TargetItem
         {
-            public string KullaniciAdi { get; }
-            public string AdSoyad { get; }
-            public PersonelItem(string k, string a) { KullaniciAdi = k; AdSoyad = a; }
-            public override string ToString() => $"{AdSoyad} ({KullaniciAdi})";
+            public string Value { get; }
+            public string Display { get; }
+            public TargetItem(string v, string d) { Value = v; Display = d; }
+            public override string ToString() => Display;
         }
     }
 }

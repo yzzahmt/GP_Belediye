@@ -13,6 +13,7 @@ namespace Belediye_Otomasyonu.Views
         public İlkGiris()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += İlkGiris_Load;
             this.Resize += (s, e) => { this.Invalidate(); };
         }
@@ -179,21 +180,21 @@ namespace Belediye_Otomasyonu.Views
             var btnVatandas = OlusturGirisBtnu(
                 "🧑  Vatandaş Girişi",
                 "Portal üzerinden hizmetlere erişin",
-                Color.FromArgb(25, 55, 120), 80);
+                Color.FromArgb(37, 99, 235), 80);
             btnVatandas.Click += (s, e) => { new VatandasGiris().Show(); this.Hide(); };
 
             // Personel Girişi Butonu
             var btnPersonel = OlusturGirisBtnu(
                 "👔  Personel Girişi",
                 "Belediye çalışanları için panel",
-                Color.FromArgb(18, 90, 160), 170);
+                Color.FromArgb(79, 70, 229), 170);
             btnPersonel.Click += (s, e) => { new PersonelGiris().Show(); this.Hide(); };
 
             // Kayıt Ol Butonu
             var btnKayit = OlusturGirisBtnu(
                 "✏️  Kayıt Ol",
                 "Yeni vatandaş hesabı oluştur",
-                Color.FromArgb(15, 110, 80), 260);
+                Color.FromArgb(16, 185, 129), 260);
             btnKayit.Click += (s, e) => { new Kayit_Screen().Show(); this.Hide(); };
 
             pnlKart.Controls.AddRange(new Control[] { lblGiris, lblGirisAlt, btnVatandas, btnPersonel, btnKayit });
@@ -205,7 +206,7 @@ namespace Belediye_Otomasyonu.Views
                 Text = "🔑  Yönetici Girişi",
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(130, 170, 220),
+                ForeColor = Color.FromArgb(103, 232, 249),
                 Font = UiTheme.SmallFont,
                 Cursor = Cursors.Hand,
                 AutoSize = true,

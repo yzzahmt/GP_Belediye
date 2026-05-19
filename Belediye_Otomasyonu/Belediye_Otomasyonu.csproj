@@ -13,6 +13,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <PreferNativeArm64>true</PreferNativeArm64>
     <Deterministic>true</Deterministic>
+    <GenerateResourceUsePreserializedResources>false</GenerateResourceUsePreserializedResources>
+    <CodePage>65001</CodePage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -92,6 +94,9 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.Resources.Extensions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Resources.Extensions.8.0.0\lib\net462\System.Resources.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
@@ -142,6 +147,15 @@
     <Compile Include="Views\BildirimGonderForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Views\DilekceYazdirForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\OdemeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\MakbuzYazdirForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
 
     <Compile Include="Views\VatandasYonetimForm.cs">
       <SubType>Form</SubType>
@@ -154,6 +168,12 @@
     </Compile>
     <Compile Include="Views\BasvuruYonetimForm.Designer.cs">
       <DependentUpon>BasvuruYonetimForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\KategoriYonetimForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\KategoriYonetimForm.Designer.cs">
+      <DependentUpon>KategoriYonetimForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\PersonelHomeScreen.Designer.cs">
       <DependentUpon>PersonelHomeScreen.cs</DependentUpon>
@@ -205,6 +225,16 @@
     </Compile>
     <Compile Include="Views\YoneticiGiris.Designer.cs">
       <DependentUpon>YoneticiGiris.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\SharedData.cs" />
+    <Compile Include="Views\VatandasForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\PersonelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\YoneticiForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <EmbeddedResource Include="Views\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

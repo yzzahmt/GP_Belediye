@@ -201,6 +201,15 @@ namespace Belediye_Otomasyonu.Views
             };
             pnlMenu.Controls.Add(bChat);
 
+            var bProfil = new Button { Text = "  👤  Profilim", Dock = DockStyle.Top, Height = 50 };
+            UiTheme.SidebarButon(bProfil);
+            bProfil.Click += (s, e) =>
+            {
+                SidebarSecimDegistir(bProfil);
+                GosterProfil();
+            };
+            pnlMenu.Controls.Add(bProfil);
+
             // Ana Sayfa
             var bAnaSayfa = new Button { Text = "  🏠  Ana Sayfa", Dock = DockStyle.Top, Height = 50 };
             UiTheme.SidebarButon(bAnaSayfa, secili: true);
@@ -1705,6 +1714,118 @@ namespace Belediye_Otomasyonu.Views
             public string Username { get; set; }
             public string AdSoyad { get; set; }
             public string Detay { get; set; }
+        }
+
+        // ── PROFİLİM ─────────────────────────────────────────────────────────
+        private void GosterProfil()
+        {
+            if (_chatTimer != null) { _chatTimer.Stop(); _chatTimer.Dispose(); _chatTimer = null; }
+
+            _pnlIcerik.Controls.Clear();
+            var pnl = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Surface };
+            string rolLabel = _isYonetici ? "Yönetici" : "Personel";
+            var hdr = UiTheme.OlusturHeaderPanel("  👤  Profilim", rolLabel + " bilgilerinizi güncelleyin ve şifrenizi değiştirin");
+
+            var pnlBody = new Panel { Dock = DockStyle.Fill, Padding = new Padding(40, 20, 40, 20), BackColor = UiTheme.Surface };
+            var scroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+            pnlBody.Controls.Add(scroll);
+
+            var kart = new Panel { BackColor = Color.White, Location = new Point(10, 10), Size = new Size(560, 540), Padding = new Padding(24) };
+            kart.Paint += (s, e) => {
+                using (var br = new LinearGradientBrush(new Point(0, 0), new Point(5, 0), UiTheme.Primary, UiTheme.PrimaryLight))
+                    e.Graphics.FillRectangle(br, 0, 0, 5, kart.Height);
+                using (var pen = new Pen(UiTheme.BorderCard, 1))
+                    e.Graphics.DrawRectangle(pen, 0, 0, kart.Width - 1, kart.Height - 1);
+            };
+            scroll.Controls.Add(kart);
+
+            // Veri çek
+            string ad = "", soyad = "", email = "", telefon = "", adres = "", ekBilgi = "";
+            DataTable dt = _isYonetici
+                ? BelediyeDbServisi.YoneticiTamProfilGetir(_oturumKullaniciAdi)
+                : BelediyeDbServisi.PersonelTamProfilGetir(_oturumKullaniciAdi);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                var r = dt.Rows[0];
+                ad      = r["Ad"]?.ToString() ?? "";
+                soyad   = r["Soyad"]?.ToString() ?? "";
+                email   = r["Email"]?.ToString() ?? "";
+                telefon = r["Telefon"]?.ToString() ?? "";
+                adres   = r["Adres"]?.ToString() ?? "";
+                ekBilgi = _isYonetici
+                    ? (r["Unvan"]?.ToString() ?? "")
+                    : (r["Departman"]?.ToString() ?? "");
+            }
+
+            int py = 15;
+            TextBox txtAd      = ProfilInputPers(kart, "Ad *", ad, ref py);
+            TextBox txtSoyad   = ProfilInputPers(kart, "Soyad *", soyad, ref py);
+            TextBox txtEmail   = ProfilInputPers(kart, "E-Posta", email, ref py);
+            string ekLabel     = _isYonetici ? "Unvan" : "Departman";
+            TextBox txtEkBilgi = ProfilInputPers(kart, ekLabel + " (salt okunur)", ekBilgi, ref py, readOnly: true);
+            TextBox txtTel     = ProfilInputPers(kart, "Telefon", telefon, ref py);
+            TextBox txtAdr     = ProfilInputPers(kart, "Adres", adres, ref py, isMultiline: true);
+            TextBox txtSifre   = ProfilInputPers(kart, "Yeni Şifre (boş bırakırsanız değişmez)", "", ref py, isPassword: true);
+
+            var btnKaydet = new Button { Text = "💾 Değişiklikleri Kaydet", Location = new Point(20, py + 10), Width = 520, Height = 44 };
+            UiTheme.BasariButon(btnKaydet);
+            kart.Controls.Add(btnKaydet);
+            kart.Height = py + 75;
+
+            btnKaydet.Click += (s, e) => {
+                if (string.IsNullOrWhiteSpace(txtAd.Text) || string.IsNullOrWhiteSpace(txtSoyad.Text))
+                {
+                    MessageBox.Show("Ad ve Soyad alanları zorunludur.", "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string err = _isYonetici
+                    ? BelediyeDbServisi.YoneticiTamProfilGuncelle(_oturumKullaniciAdi, txtAd.Text, txtSoyad.Text, txtEmail.Text, txtTel.Text, txtAdr.Text, txtSifre.Text)
+                    : BelediyeDbServisi.PersonelTamProfilGuncelle(_oturumKullaniciAdi, txtAd.Text, txtSoyad.Text, txtEmail.Text, txtTel.Text, txtAdr.Text, txtSifre.Text);
+
+                if (err != null)
+                {
+                    MessageBox.Show("Hata: " + err, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    BelediyeDbServisi.SistemLoguEkle(_oturumKullaniciAdi, rolLabel, "Profil bilgilerini güncelledi.");
+                    MessageBox.Show("Profil bilgileriniz başarıyla güncellendi.", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    GosterProfil(); // Sayfayı yenile
+                }
+            };
+
+            pnl.Controls.Add(hdr);
+            pnl.Controls.Add(pnlBody);
+            hdr.BringToFront();
+            pnlBody.SendToBack();
+            _pnlIcerik.Controls.Add(pnl);
+        }
+
+        private TextBox ProfilInputPers(Panel parent, string labelText, string val, ref int y,
+            bool isMultiline = false, bool isPassword = false, bool readOnly = false)
+        {
+            var lbl = new Label { Text = labelText, Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Location = new Point(20, y), Width = 520, Height = 18 };
+            parent.Controls.Add(lbl);
+            y += 20;
+
+            int height = isMultiline ? 60 : 30;
+            var txt = new TextBox
+            {
+                Text = val,
+                Location = new Point(20, y),
+                Width = 520,
+                Height = height,
+                Multiline = isMultiline,
+                ReadOnly = readOnly
+            };
+            UiTheme.TextBoxAydinlikStil(txt);
+            if (isPassword) txt.UseSystemPasswordChar = true;
+            if (readOnly) txt.BackColor = Color.FromArgb(242, 244, 248);
+            parent.Controls.Add(txt);
+            y += height + 15;
+            return txt;
         }
     }
 }

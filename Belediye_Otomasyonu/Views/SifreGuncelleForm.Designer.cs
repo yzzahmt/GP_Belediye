@@ -1,4 +1,4 @@
-﻿namespace Belediye_Otomasyonu.Views
+namespace Belediye_Otomasyonu.Views
 {
     partial class SifreGuncelleForm
     {
@@ -82,7 +82,7 @@
             // SifreGuncelleForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);

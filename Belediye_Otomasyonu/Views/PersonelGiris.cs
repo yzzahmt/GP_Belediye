@@ -12,6 +12,7 @@ namespace Belediye_Otomasyonu.Views
         public PersonelGiris()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 
@@ -106,7 +107,8 @@ namespace Belediye_Otomasyonu.Views
         }
 
         private TextBox Txt(int x, int y) {
-            var t = new TextBox { Location = new Point(x, y), Width = 308, Height = 36, Font = UiTheme.UiFont, BackColor = Color.FromArgb(18, 35, 75), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            var t = new TextBox { Location = new Point(x, y), Width = 308, Height = 36 };
+            UiTheme.TextBoxKaranlikStil(t);
             return t;
         }
         private Button DarkBtn(string text, int x, int y, int w) {
