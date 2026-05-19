@@ -22,6 +22,8 @@ namespace Belediye_Otomasyonu.Views
         private Panel _pnlIcerik;
         // Bildirim rozet etiketi
         private Label _lblBildirimRozet;
+        private System.Windows.Forms.Timer _chatTimer;
+        private string _seciliSohbetKadi = "";
 
         public PersonelHomeScreen() : this("", false) { }
 
@@ -30,13 +32,18 @@ namespace Belediye_Otomasyonu.Views
             _oturumKullaniciAdi = oturumKullaniciAdi ?? "";
             _isYonetici = isYonetici;
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             OlusturArayuz();
         }
 
         // Ana Arayüz
         private void OlusturArayuz()
         {
-            tableUstBar.Visible = false;
+            this.Controls.Clear();
+
+            // Sidebar
+            var pnlSidebar = OlusturSidebar();
+            this.Controls.Add(pnlSidebar);
 
             // İçerik alanı
             _pnlIcerik = new Panel
@@ -44,17 +51,10 @@ namespace Belediye_Otomasyonu.Views
                 Dock = DockStyle.Fill,
                 BackColor = UiTheme.Surface
             };
-            this.Controls.Remove(panelChart);
-            this.Controls.Remove(tableStats);
             _pnlIcerik.Controls.Add(panelChart);
             _pnlIcerik.Controls.Add(tableStats);
 
-            // Sidebar
-            var pnlSidebar = OlusturSidebar();
-            this.Controls.Add(pnlSidebar);
-
             this.Controls.Add(_pnlIcerik);
-            _pnlIcerik.SendToBack();
 
             UiTheme.FormDizayn(this);
         }
@@ -64,13 +64,13 @@ namespace Belediye_Otomasyonu.Views
         {
             var sidebar = new Panel { Dock = DockStyle.Left, Width = 240, BackColor = UiTheme.SidebarBg };
             sidebar.Paint += (s, e) => {
-                using (var br = new LinearGradientBrush(new Point(0,0), new Point(0, sidebar.Height), UiTheme.SidebarBg, Color.FromArgb(12,25,65)))
+                using (var br = new LinearGradientBrush(new Point(0,0), new Point(0, sidebar.Height), UiTheme.SidebarBg, Color.FromArgb(17, 28, 59)))
                     e.Graphics.FillRectangle(br, sidebar.ClientRectangle);
             };
 
             var pnlLogo = new Panel { Dock = DockStyle.Top, Height = 100, BackColor = Color.Transparent };
             pnlLogo.Paint += (s, e) => {
-                using (var br = new LinearGradientBrush(new Point(0,0), new Point(pnlLogo.Width,0), UiTheme.PrimaryDark, Color.FromArgb(18,45,95)))
+                using (var br = new LinearGradientBrush(new Point(0,0), new Point(pnlLogo.Width,0), UiTheme.PrimaryDark, Color.FromArgb(28, 37, 65)))
                     e.Graphics.FillRectangle(br, pnlLogo.ClientRectangle);
             };
             var sepLogo = new Panel { Dock = DockStyle.Bottom, Height = 3, BackColor = UiTheme.Accent };
@@ -85,7 +85,6 @@ namespace Belediye_Otomasyonu.Views
             };
             pnlLogo.Controls.Add(lblLogo);
             pnlLogo.Controls.Add(sepLogo);
-            sidebar.Controls.Add(pnlLogo);
 
             // Kullanıcı bilgi alanı
             var pnlUser = new Panel
@@ -95,19 +94,23 @@ namespace Belediye_Otomasyonu.Views
             };
             string rol = _isYonetici ? "Yönetici" : "Personel";
             UiTheme.SidebarUserPaneli(pnlUser, _oturumKullaniciAdi, rol);
-            sidebar.Controls.Add(pnlUser);
+
             // Cikis butonu
             var bCikis = new Button { Text = "  🚪  Çıkış Yap", Dock = DockStyle.Bottom, Height = 50 };
             UiTheme.SidebarButon(bCikis);
             bCikis.ForeColor = Color.FromArgb(220, 100, 100);
             bCikis.Click += (s, e) => { var g = new İlkGiris(); g.Show(); Close(); };
-            sidebar.Controls.Add(bCikis);
 
-            var sep = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Color.FromArgb(40, 60, 100) };
-            sidebar.Controls.Add(sep);
+            var sep = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Color.FromArgb(30, 41, 59) };
 
             // Menu Panel (scrollable area for buttons)
             var pnlMenu = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.Transparent };
+
+            // Stack controls in correct order to avoid overlapping:
+            sidebar.Controls.Add(pnlUser);
+            sidebar.Controls.Add(pnlLogo);
+            sidebar.Controls.Add(sep);
+            sidebar.Controls.Add(bCikis);
             sidebar.Controls.Add(pnlMenu);
 
             if (_isYonetici)
@@ -179,6 +182,24 @@ namespace Belediye_Otomasyonu.Views
             };
             bBildirim.Controls.Add(_lblBildirimRozet);
             pnlMenu.Controls.Add(bBildirim);
+
+            var bGorevler = new Button { Text = "  📝  Görevlerim & İş Takibi", Dock = DockStyle.Top, Height = 50 };
+            UiTheme.SidebarButon(bGorevler);
+            bGorevler.Click += (s, e) =>
+            {
+                SidebarSecimDegistir(bGorevler);
+                GosterPersonelGorevleri();
+            };
+            pnlMenu.Controls.Add(bGorevler);
+
+            var bChat = new Button { Text = "  💬  Belediye İçi İletişim", Dock = DockStyle.Top, Height = 50 };
+            UiTheme.SidebarButon(bChat);
+            bChat.Click += (s, e) =>
+            {
+                SidebarSecimDegistir(bChat);
+                GosterBelediyeChat();
+            };
+            pnlMenu.Controls.Add(bChat);
 
             // Ana Sayfa
             var bAnaSayfa = new Button { Text = "  🏠  Ana Sayfa", Dock = DockStyle.Top, Height = 50 };
@@ -267,10 +288,10 @@ namespace Belediye_Otomasyonu.Views
             UiTheme.TextBoxAydinlikStil(txtAra);
             txtAra.GotFocus  += (s, e) => { if (txtAra.Text == "Ara...") { txtAra.Text = ""; txtAra.ForeColor = UiTheme.TextPrimary; } };
             txtAra.LostFocus += (s, e) => { if (string.IsNullOrEmpty(txtAra.Text)) { txtAra.Text = "Ara..."; txtAra.ForeColor = UiTheme.TextMuted; } };
-            var btnFiltre = new Button { Text = "Filtrele", Location = new Point(500, 8), Width = 90, Height = 32 };
-            UiTheme.AnaEylemButonu(btnFiltre);
-            var btnYenile2 = new Button { Text = "Yenile", Location = new Point(600, 8), Width = 80, Height = 32 };
-            UiTheme.IkincilButon(btnYenile2);
+            var btnFiltre = new Button { Text = "Filtrele", Location = new Point(500, 10), Width = 90, Height = 32 };
+            UiTheme.KucukYuvarlakButon(btnFiltre, UiTheme.Primary, Color.White, 4);
+            var btnYenile2 = new Button { Text = "Yenile", Location = new Point(600, 10), Width = 80, Height = 32 };
+            UiTheme.KucukIkincilButon(btnYenile2);
             pnlFiltre.Controls.AddRange(new Control[] { cmbDur, cmbKat, txtAra, btnFiltre, btnYenile2 });
 
             // Detay paneli sağ
@@ -287,7 +308,7 @@ namespace Belediye_Otomasyonu.Views
             var btnNotEkle = new Button { Text = "  Not Ekle", Dock = DockStyle.Top, Height = 32 };
             UiTheme.BasariButon(btnNotEkle);
 
-            var pnlDurBtn = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Color.White };
+            var pnlDurBtn = new Panel { Dock = DockStyle.Top, Height = 52, BackColor = Color.White };
             var cmbYeniDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 135, Location = new Point(0, 6), Font = UiTheme.UiFont };
             UiTheme.ComboBoxStil(cmbYeniDur);
             cmbYeniDur.Items.AddRange(new[] { "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
@@ -307,7 +328,7 @@ namespace Belediye_Otomasyonu.Views
 
             if (_isYonetici)
             {
-                pnlAtama = new Panel { Dock = DockStyle.Top, Height = 120, BackColor = Color.White };
+                pnlAtama = new Panel { Dock = DockStyle.Top, Height = 140, BackColor = Color.White };
                 var lblAtaBas = new Label { Text = "Personel Ata:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Location = new Point(0, 2), Height = 22, Width = 280 };
                 cmbAtanDep = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 26), Width = 280, Font = UiTheme.UiFont };
                 UiTheme.ComboBoxStil(cmbAtanDep);
@@ -361,7 +382,9 @@ namespace Belediye_Otomasyonu.Views
                 MessageBox.Show("Durum güncellendi.", "Tamam", MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
 
-            var btnYazdir = new Button { Text = "🖨️ Dilekçe/Rapor Yazdır", Dock = DockStyle.Bottom, Height = 36 };
+            var pnlSpace2 = new Panel { Dock = DockStyle.Top, Height = 10, BackColor = Color.White };
+
+            var btnYazdir = new Button { Text = "🖨️ Dilekçe/Rapor Yazdır", Dock = DockStyle.Top, Height = 36 };
             UiTheme.AccentButon(btnYazdir);
             btnYazdir.Click += (s, e) => {
                 if (seciliId > 0)
@@ -382,6 +405,7 @@ namespace Belediye_Otomasyonu.Views
             pnlDetay.Controls.Add(lblNot);
             pnlDetay.Controls.Add(txtNot);
             pnlDetay.Controls.Add(btnNotEkle);
+            pnlDetay.Controls.Add(pnlSpace2);
             pnlDetay.Controls.Add(btnYazdir);
 
             // Grid
@@ -1084,6 +1108,603 @@ namespace Belediye_Otomasyonu.Views
             dgv.SendToBack();
 
             _pnlIcerik.Controls.Add(pnl);
+        }
+
+        // ── GÖREVLERİM VE İŞ TAKİBİ ──────────────────────────────────────────
+        private void GosterPersonelGorevleri()
+        {
+            if (_chatTimer != null)
+            {
+                _chatTimer.Stop();
+                _chatTimer.Dispose();
+                _chatTimer = null;
+            }
+
+            _pnlIcerik.Controls.Clear();
+            var pnl = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Surface };
+            var hdr = UiTheme.OlusturHeaderPanel("📋 Görevlerim & İş Takibi", "Size atanan görevleri yönetin veya personellere yeni işler atayın.");
+
+            // 1. Stats Bar
+            var pnlStats = new Panel { Dock = DockStyle.Top, Height = 90, Padding = new Padding(12, 10, 12, 10), BackColor = UiTheme.Surface };
+            var tbl = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1 };
+            tbl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            tbl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            tbl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            pnlStats.Controls.Add(tbl);
+
+            var stat1 = UiTheme.OlusturStatKart("Bekleyen Görevler", "0", UiTheme.Danger);
+            var stat2 = UiTheme.OlusturStatKart("Devam Eden İşler", "0", UiTheme.Info);
+            var stat3 = UiTheme.OlusturStatKart("Tamamlanan Görevler", "0", UiTheme.Success);
+            tbl.Controls.Add(stat1, 0, 0);
+            tbl.Controls.Add(stat2, 1, 0);
+            tbl.Controls.Add(stat3, 2, 0);
+
+            // Set AccessibleDescription for identifying panels
+            stat1.AccessibleDescription = "Bekleyen Görevler";
+            stat2.AccessibleDescription = "Devam Eden İşler";
+            stat3.AccessibleDescription = "Tamamlanan Görevler";
+
+            foreach (Control c in tbl.Controls)
+            {
+                if (c is Panel p)
+                {
+                    foreach (Control cc in p.Controls)
+                    {
+                        if (cc is Label lblVal && lblVal.Font.Size > 12)
+                        {
+                            lblVal.Name = "lblVal";
+                        }
+                    }
+                }
+            }
+
+            // Helper to update stats labels
+            Action<string, string, string> guncelleStats = (bStr, dStr, tStr) =>
+            {
+                foreach (Control c in tbl.Controls)
+                {
+                    if (c is Panel p)
+                    {
+                        foreach (Control cc in p.Controls)
+                        {
+                            if (cc is Label lblVal && lblVal.Name == "lblVal")
+                            {
+                                if (p.AccessibleDescription == "Bekleyen Görevler") lblVal.Text = bStr;
+                                else if (p.AccessibleDescription == "Devam Eden İşler") lblVal.Text = dStr;
+                                else if (p.AccessibleDescription == "Tamamlanan Görevler") lblVal.Text = tStr;
+                            }
+                        }
+                    }
+                }
+            };
+
+            // 2. Main Grid
+            var dgv = new DataGridView { Dock = DockStyle.Fill };
+            UiTheme.DataGridStil(dgv);
+            dgv.AutoGenerateColumns = false;
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Id", HeaderText = "ID", Width = 55 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Baslik", HeaderText = "Görev Başlığı", Width = 180 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "AtananPersonelKadi", HeaderText = "Atanan Personel", Width = 110 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "VerenKadi", HeaderText = "Görev Veren", Width = 110 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Oncelik", HeaderText = "Öncelik", Width = 90 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Durum", HeaderText = "Durum", Width = 110 });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "OlusturmaTarihi", HeaderText = "Oluşturma Tarihi", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+
+            dgv.CellFormatting += (s, e) => {
+                if (e.ColumnIndex >= 0 && e.Value != null)
+                {
+                    string colName = dgv.Columns[e.ColumnIndex].DataPropertyName;
+                    if (colName == "Oncelik")
+                    {
+                        string val = e.Value.ToString();
+                        if (val == "Yüksek") e.CellStyle.ForeColor = UiTheme.Danger;
+                        else if (val == "Orta") e.CellStyle.ForeColor = UiTheme.Warning;
+                        else e.CellStyle.ForeColor = UiTheme.TextMuted;
+                        e.CellStyle.Font = UiTheme.UiFontBold;
+                    }
+                    else if (colName == "Durum")
+                    {
+                        string val = e.Value.ToString();
+                        if (val == "Tamamlandi") e.CellStyle.ForeColor = UiTheme.Success;
+                        else if (val == "DevamEdiyor") e.CellStyle.ForeColor = UiTheme.Info;
+                        else e.CellStyle.ForeColor = Color.DarkGray;
+                        e.CellStyle.Font = UiTheme.UiFontBold;
+                    }
+                }
+            };
+
+            // 3. Right Sidebar Details Panel
+            var pnlDetay = new Panel { Dock = DockStyle.Right, Width = 320, BackColor = Color.White, Padding = new Padding(14), AutoScroll = true };
+            pnlDetay.Paint += (s, e) => {
+                using (var pen = new Pen(UiTheme.BorderSubtle, 1))
+                    e.Graphics.DrawLine(pen, 0, 0, 0, pnlDetay.Height);
+            };
+
+            var lblGorevBas = new Label { Text = "Görev Detayları", Font = UiTheme.UiFontBold, ForeColor = UiTheme.Primary, Dock = DockStyle.Top, Height = 25 };
+            var rtbAciklama = new RichTextBox { Dock = DockStyle.Top, Height = 100, ReadOnly = true, BorderStyle = BorderStyle.None, Font = UiTheme.UiFont, BackColor = Color.FromArgb(248, 250, 252) };
+            
+            var pnlSep1 = new Panel { Dock = DockStyle.Top, Height = 10 };
+            
+            // Staff controls
+            var btnBaslat = new Button { Text = "▶️ Görevi Başlat", Dock = DockStyle.Top, Height = 36 };
+            UiTheme.AccentButon(btnBaslat);
+            var pnlSep2 = new Panel { Dock = DockStyle.Top, Height = 8 };
+            var btnTamamla = new Button { Text = "✔️ Görevi Tamamla", Dock = DockStyle.Top, Height = 36 };
+            UiTheme.BasariButon(btnTamamla);
+
+            int seciliGorevId = -1;
+            
+            // Manager controls
+            Panel pnlYoneticiForm = null;
+            Button btnSil = null;
+
+            if (_isYonetici)
+            {
+                btnSil = new Button { Text = "🗑️ Görevi Sil", Dock = DockStyle.Top, Height = 36 };
+                UiTheme.TehlikeButon(btnSil);
+
+                pnlYoneticiForm = new Panel { Dock = DockStyle.Top, Height = 340, BackColor = Color.White };
+                var lblYeniBas = new Label { Text = "Yeni Görev Tanımla", Font = UiTheme.UiFontBold, ForeColor = UiTheme.Secondary, Location = new Point(0, 15), Height = 25, Width = 280 };
+                
+                var lblT = new Label { Text = "Görev Başlığı:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Location = new Point(0, 45), Height = 18, Width = 280 };
+                var txtBaslik = new TextBox { Location = new Point(0, 63), Width = 280, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
+                UiTheme.TextBoxAydinlikStil(txtBaslik);
+
+                var lblA = new Label { Text = "Görev Açıklaması:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Location = new Point(0, 93), Height = 18, Width = 280 };
+                var rtbA = new RichTextBox { Location = new Point(0, 111), Width = 280, Height = 60, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
+
+                var lblP = new Label { Text = "Personel Seç:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Location = new Point(0, 181), Height = 18, Width = 280 };
+                var cmbPers = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 199), Width = 280, Font = UiTheme.UiFont };
+                UiTheme.ComboBoxStil(cmbPers);
+
+                var lblPr = new Label { Text = "Öncelik:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Location = new Point(0, 229), Height = 18, Width = 280 };
+                var cmbPr = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 247), Width = 280, Font = UiTheme.UiFont };
+                UiTheme.ComboBoxStil(cmbPr);
+                cmbPr.Items.AddRange(new[] { "Yüksek", "Orta", "Düşük" });
+                cmbPr.SelectedIndex = 1;
+
+                var btnKaydet = new Button { Text = "➕ Görev Ata", Location = new Point(0, 285), Width = 280, Height = 36 };
+                UiTheme.BasariButon(btnKaydet);
+
+                pnlYoneticiForm.Controls.AddRange(new Control[] { lblYeniBas, lblT, txtBaslik, lblA, rtbA, lblP, cmbPers, lblPr, cmbPr, btnKaydet });
+
+                // Load users
+                try
+                {
+                    var dtUsers = BelediyeDbServisi.TumKullanicilarListesiGetir("");
+                    cmbPers.DataSource = dtUsers;
+                    cmbPers.DisplayMember = "AdSoyad";
+                    cmbPers.ValueMember = "KullaniciAdi";
+                }
+                catch { }
+
+                btnKaydet.Click += (s, e) =>
+                {
+                    string bStr = txtBaslik.Text.Trim();
+                    string aStr = rtbA.Text.Trim();
+                    string target = cmbPers.SelectedValue?.ToString();
+                    string priority = cmbPr.SelectedItem?.ToString();
+
+                    if (string.IsNullOrEmpty(bStr) || string.IsNullOrEmpty(target))
+                    {
+                        MessageBox.Show("Lütfen Başlık girin ve Personel seçin.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    var err = BelediyeDbServisi.PersonelGoreviEkle(bStr, aStr, target, _oturumKullaniciAdi, priority);
+                    if (err != null) MessageBox.Show(err);
+                    else
+                    {
+                        MessageBox.Show("Görev başarıyla atandı.", "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txtBaslik.Clear();
+                        rtbA.Clear();
+                        // Refresh grid
+                        dgv.DataSource = BelediyeDbServisi.PersonelGorevleriGetir(_oturumKullaniciAdi, _isYonetici);
+                        UpdateStatsGorev(dgv, guncelleStats);
+                    }
+                };
+            }
+
+            dgv.SelectionChanged += (s, e) => {
+                if (dgv.CurrentRow?.DataBoundItem is DataRowView drv)
+                {
+                    seciliGorevId = Convert.ToInt32(drv["Id"]);
+                    lblGorevBas.Text = drv["Baslik"]?.ToString();
+                    rtbAciklama.Text = drv["Aciklama"]?.ToString();
+                    string durum = drv["Durum"]?.ToString();
+
+                    btnBaslat.Enabled = (durum == "Baslanmadi");
+                    btnTamamla.Enabled = (durum != "Tamamlandi");
+                }
+                else
+                {
+                    seciliGorevId = -1;
+                    lblGorevBas.Text = "Görev Seçilmedi";
+                    rtbAciklama.Clear();
+                    btnBaslat.Enabled = false;
+                    btnTamamla.Enabled = false;
+                }
+            };
+
+            btnBaslat.Click += (s, e) => {
+                if (seciliGorevId <= 0) return;
+                var err = BelediyeDbServisi.PersonelGorevDurumuGuncelle(seciliGorevId, "DevamEdiyor");
+                if (err != null) MessageBox.Show(err);
+                else
+                {
+                    dgv.DataSource = BelediyeDbServisi.PersonelGorevleriGetir(_oturumKullaniciAdi, _isYonetici);
+                    UpdateStatsGorev(dgv, guncelleStats);
+                }
+            };
+
+            btnTamamla.Click += (s, e) => {
+                if (seciliGorevId <= 0) return;
+                var err = BelediyeDbServisi.PersonelGorevDurumuGuncelle(seciliGorevId, "Tamamlandi");
+                if (err != null) MessageBox.Show(err);
+                else
+                {
+                    dgv.DataSource = BelediyeDbServisi.PersonelGorevleriGetir(_oturumKullaniciAdi, _isYonetici);
+                    UpdateStatsGorev(dgv, guncelleStats);
+                }
+            };
+
+            if (_isYonetici && btnSil != null)
+            {
+                btnSil.Click += (s, e) => {
+                    if (seciliGorevId <= 0) return;
+                    if (MessageBox.Show("Seçili görevi silmek istediğinize emin misiniz?", "Onay", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                    {
+                        var err = BelediyeDbServisi.PersonelGorevSil(seciliGorevId);
+                        if (err != null) MessageBox.Show(err);
+                        else
+                        {
+                            dgv.DataSource = BelediyeDbServisi.PersonelGorevleriGetir(_oturumKullaniciAdi, _isYonetici);
+                            UpdateStatsGorev(dgv, guncelleStats);
+                        }
+                    }
+                };
+            }
+
+            pnlDetay.Controls.Add(lblGorevBas);
+            pnlDetay.Controls.Add(rtbAciklama);
+            pnlDetay.Controls.Add(pnlSep1);
+            pnlDetay.Controls.Add(btnBaslat);
+            pnlDetay.Controls.Add(pnlSep2);
+            pnlDetay.Controls.Add(btnTamamla);
+            if (_isYonetici)
+            {
+                var pnlSep3 = new Panel { Dock = DockStyle.Top, Height = 8 };
+                pnlDetay.Controls.Add(pnlSep3);
+                pnlDetay.Controls.Add(btnSil);
+                pnlDetay.Controls.Add(pnlYoneticiForm);
+            }
+
+            dgv.DataSource = BelediyeDbServisi.PersonelGorevleriGetir(_oturumKullaniciAdi, _isYonetici);
+            UpdateStatsGorev(dgv, guncelleStats);
+
+            pnl.Controls.Add(hdr);
+            pnl.Controls.Add(pnlStats);
+            pnl.Controls.Add(pnlDetay);
+            pnl.Controls.Add(dgv);
+
+            hdr.BringToFront();
+            pnlStats.BringToFront();
+            pnlDetay.BringToFront();
+            dgv.SendToBack();
+
+            _pnlIcerik.Controls.Add(pnl);
+        }
+
+        private void UpdateStatsGorev(DataGridView dgv, Action<string, string, string> updateAction)
+        {
+            int b = 0, d = 0, t = 0;
+            if (dgv.DataSource is DataTable dt)
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    string status = row["Durum"]?.ToString();
+                    if (status == "Baslanmadi") b++;
+                    else if (status == "DevamEdiyor") d++;
+                    else if (status == "Tamamlandi") t++;
+                }
+            }
+            updateAction(b.ToString(), d.ToString(), t.ToString());
+        }
+
+        // ── BELEDİYE İÇİ İLETİŞİM ─────────────────────────────────────────────
+        private void GosterBelediyeChat()
+        {
+            if (_chatTimer != null)
+            {
+                _chatTimer.Stop();
+                _chatTimer.Dispose();
+                _chatTimer = null;
+            }
+
+            _pnlIcerik.Controls.Clear();
+            var pnl = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Surface };
+            var hdr = UiTheme.OlusturHeaderPanel("💬 Belediye İçi İletişim", "Çalışma arkadaşlarınızla doğrudan mesajlaşın veya duyuru panosuna yazın.");
+
+            var split = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                BackColor = UiTheme.Surface
+            };
+            split.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 260));
+            split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+            // Left Side: Contacts
+            var pnlContacts = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(10) };
+            pnlContacts.Paint += (s, e) => {
+                using (var pen = new Pen(UiTheme.BorderSubtle, 1))
+                    e.Graphics.DrawLine(pen, pnlContacts.Width - 1, 0, pnlContacts.Width - 1, pnlContacts.Height);
+            };
+
+            var lblContBas = new Label { Text = "Sohbet Listesi", Font = UiTheme.UiFontBold, ForeColor = UiTheme.Primary, Dock = DockStyle.Top, Height = 30 };
+            var lstContacts = new ListBox { Dock = DockStyle.Fill, Font = UiTheme.UiFont, BorderStyle = BorderStyle.None, ItemHeight = 35, DrawMode = DrawMode.OwnerDrawFixed };
+            pnlContacts.Controls.Add(lstContacts);
+            pnlContacts.Controls.Add(lblContBas);
+
+            // Right Side: Chat Board
+            var pnlChatMain = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Surface, Padding = new Padding(12) };
+            
+            var pnlChatHdr = new Panel { Dock = DockStyle.Top, Height = 48, BackColor = Color.White, Padding = new Padding(12) };
+            pnlChatHdr.Paint += (s, e) => {
+                using (var pen = new Pen(UiTheme.BorderSubtle, 1))
+                    e.Graphics.DrawLine(pen, 0, pnlChatHdr.Height - 1, pnlChatHdr.Width, pnlChatHdr.Height - 1);
+            };
+            var lblSeciliKullanici = new Label { Text = "Konuşma seçilmedi", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Left, AutoSize = true };
+            pnlChatHdr.Controls.Add(lblSeciliKullanici);
+
+            var pnlInput = new Panel { Dock = DockStyle.Bottom, Height = 64, BackColor = Color.White, Padding = new Padding(8) };
+            pnlInput.Paint += (s, e) => {
+                using (var pen = new Pen(UiTheme.BorderSubtle, 1))
+                    e.Graphics.DrawLine(pen, 0, 0, pnlInput.Width, 0);
+            };
+
+            var txtMesaj = new TextBox { Width = 380, Location = new Point(10, 18), Font = UiTheme.UiFont };
+            UiTheme.TextBoxAydinlikStil(txtMesaj);
+            var btnGonder = new Button { Text = "Gönder ✉️", Location = new Point(400, 14), Width = 100, Height = 32 };
+            UiTheme.AnaEylemButonu(btnGonder);
+            pnlInput.Controls.AddRange(new Control[] { txtMesaj, btnGonder });
+
+            var chatScroll = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Color.FromArgb(248, 250, 252),
+                Padding = new Padding(10),
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
+            };
+
+            pnlChatMain.Controls.Add(chatScroll);
+            pnlChatMain.Controls.Add(pnlChatHdr);
+            pnlChatMain.Controls.Add(pnlInput);
+
+            split.Controls.Add(pnlContacts, 0, 0);
+            split.Controls.Add(pnlChatMain, 1, 0);
+
+            pnl.Controls.Add(hdr);
+            pnl.Controls.Add(split);
+
+            hdr.BringToFront();
+            split.SendToBack();
+
+            // Populate contacts
+            lstContacts.Items.Clear();
+            lstContacts.Items.Add(new ChatContact { Username = "GENEL", AdSoyad = "📢 Genel Duyuru Panosu", Detay = "Tüm Belediye" });
+            try
+            {
+                var dtC = BelediyeDbServisi.TumKullanicilarListesiGetir(_oturumKullaniciAdi);
+                foreach (DataRow row in dtC.Rows)
+                {
+                    lstContacts.Items.Add(new ChatContact
+                    {
+                        Username = row["KullaniciAdi"]?.ToString(),
+                        AdSoyad = row["AdSoyad"]?.ToString(),
+                        Detay = row["Detay"]?.ToString() + " (" + row["Rol"]?.ToString() + ")"
+                    });
+                }
+            }
+            catch { }
+
+            // Owner Draw ListBox for Contacts to look extremely premium!
+            lstContacts.DrawItem += (s, e) => {
+                if (e.Index < 0) return;
+                e.DrawBackground();
+                var contact = (ChatContact)lstContacts.Items[e.Index];
+                bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+                using (var brushText = new SolidBrush(isSelected ? Color.White : UiTheme.TextPrimary))
+                using (var brushSub = new SolidBrush(isSelected ? Color.FromArgb(210, 225, 245) : UiTheme.TextMuted))
+                {
+                    e.Graphics.DrawString(contact.AdSoyad, UiTheme.UiFontBold, brushText, e.Bounds.X + 8, e.Bounds.Y + 4);
+                    e.Graphics.DrawString(contact.Detay, new Font("Segoe UI", 7.5f), brushSub, e.Bounds.X + 8, e.Bounds.Y + 20);
+                }
+                
+                // Draw a separator line
+                using (var pen = new Pen(UiTheme.BorderSubtle, 1))
+                {
+                    e.Graphics.DrawLine(pen, e.Bounds.X, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
+                }
+                e.DrawFocusRectangle();
+            };
+
+            Action yukleMesajlar = () => {
+                if (string.IsNullOrEmpty(_seciliSohbetKadi)) return;
+                try
+                {
+                    var dtMsg = BelediyeDbServisi.MesajlariGetir(_oturumKullaniciAdi, _seciliSohbetKadi);
+                    
+                    // Don't recreate if message count is same to avoid flashing/jerkiness
+                    if (chatScroll.Controls.Count == dtMsg.Rows.Count)
+                    {
+                        // Check if last message matches, if so, return
+                        if (dtMsg.Rows.Count > 0)
+                        {
+                            var lastRow = dtMsg.Rows[dtMsg.Rows.Count - 1];
+                            string lastText = lastRow["Mesaj"]?.ToString();
+                            // Just a quick check
+                            var lastPanel = chatScroll.Controls[chatScroll.Controls.Count - 1] as Panel;
+                            if (lastPanel != null && lastPanel.Controls.Count > 0)
+                            {
+                                var innerPanel = lastPanel.Controls[0] as Panel;
+                                if (innerPanel != null && innerPanel.Controls.Count > 0 && innerPanel.Controls[0] is Label lbl && lbl.Text == lastText)
+                                    return;
+                            }
+                        }
+                    }
+
+                    chatScroll.Controls.Clear();
+                    chatScroll.SuspendLayout();
+                    foreach (DataRow row in dtMsg.Rows)
+                    {
+                        string sender = row["GonderenKadi"]?.ToString();
+                        string msg = row["Mesaj"]?.ToString();
+                        DateTime time = Convert.ToDateTime(row["Tarih"]);
+                        bool isMe = sender == _oturumKullaniciAdi;
+
+                        EkleMesajBalonu(chatScroll, sender, msg, time, isMe);
+                    }
+                    chatScroll.ResumeLayout();
+                    chatScroll.PerformLayout();
+
+                    // Scroll to bottom
+                    if (chatScroll.Controls.Count > 0)
+                    {
+                        chatScroll.ScrollControlIntoView(chatScroll.Controls[chatScroll.Controls.Count - 1]);
+                    }
+                }
+                catch { }
+            };
+
+            lstContacts.SelectedIndexChanged += (s, e) => {
+                if (lstContacts.SelectedItem is ChatContact cc)
+                {
+                    _seciliSohbetKadi = cc.Username;
+                    lblSeciliKullanici.Text = "Sohbet: " + cc.AdSoyad;
+                    yukleMesajlar();
+                }
+            };
+
+            // Set size of message text box dynamically
+            pnlInput.Resize += (s, e) => {
+                txtMesaj.Width = pnlInput.Width - btnGonder.Width - 30;
+                btnGonder.Location = new Point(txtMesaj.Right + 10, btnGonder.Location.Y);
+            };
+
+            Action gonderAction = () => {
+                string msg = txtMesaj.Text.Trim();
+                if (string.IsNullOrEmpty(msg) || string.IsNullOrEmpty(_seciliSohbetKadi)) return;
+
+                var err = BelediyeDbServisi.MesajGonder(_oturumKullaniciAdi, _seciliSohbetKadi, msg);
+                if (err != null) MessageBox.Show(err);
+                else
+                {
+                    txtMesaj.Clear();
+                    yukleMesajlar();
+                }
+            };
+
+            btnGonder.Click += (s, e) => gonderAction();
+            txtMesaj.KeyDown += (s, e) => {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    gonderAction();
+                }
+            };
+
+            // Start timer for real-time polling
+            _chatTimer = new System.Windows.Forms.Timer { Interval = 3000 }; // 3 seconds
+            _chatTimer.Tick += (s, e) => {
+                if (this.Visible && _aktifSidebarBtn != null && _aktifSidebarBtn.Text.Contains("İletişim"))
+                {
+                    yukleMesajlar();
+                }
+            };
+            _chatTimer.Start();
+
+            // Select General board by default
+            if (lstContacts.Items.Count > 0)
+            {
+                lstContacts.SelectedIndex = 0;
+            }
+
+            _pnlIcerik.Controls.Add(pnl);
+        }
+
+        private void EkleMesajBalonu(FlowLayoutPanel pnl, string gonderen, string mesaj, DateTime tarih, bool isMe)
+        {
+            var pMsg = new Panel
+            {
+                Width = pnl.Width - 30,
+                Height = 65,
+                Margin = new Padding(3, 5, 3, 5),
+                BackColor = Color.Transparent
+            };
+
+            var pBubble = new Panel
+            {
+                Width = (int)(pMsg.Width * 0.75),
+                Height = 55,
+                BackColor = isMe ? Color.FromArgb(220, 235, 252) : Color.FromArgb(243, 244, 246),
+                Padding = new Padding(10),
+                Location = new Point(isMe ? pMsg.Width - (int)(pMsg.Width * 0.75) - 5 : 5, 5)
+            };
+
+            pBubble.Paint += (s, e) =>
+            {
+                using (var pen = new Pen(isMe ? Color.FromArgb(170, 205, 240) : Color.FromArgb(220, 220, 220), 1))
+                {
+                    var rect = new Rectangle(0, 0, pBubble.Width - 1, pBubble.Height - 1);
+                    e.Graphics.DrawRectangle(pen, rect);
+                }
+            };
+
+            var lblText = new Label
+            {
+                Text = mesaj,
+                Font = UiTheme.UiFont,
+                ForeColor = Color.FromArgb(30, 41, 59),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.TopLeft
+            };
+
+            var lblMeta = new Label
+            {
+                Text = (isMe ? "Ben" : gonderen) + " • " + tarih.ToString("HH:mm"),
+                Font = new Font("Segoe UI", 7.5f, FontStyle.Regular),
+                ForeColor = Color.FromArgb(100, 116, 139),
+                Dock = DockStyle.Bottom,
+                Height = 15,
+                TextAlign = isMe ? ContentAlignment.BottomRight : ContentAlignment.BottomLeft
+            };
+
+            pBubble.Controls.Add(lblText);
+            pBubble.Controls.Add(lblMeta);
+            pMsg.Controls.Add(pBubble);
+            pnl.Controls.Add(pMsg);
+            
+            using (var g = pMsg.CreateGraphics())
+            {
+                var size = g.MeasureString(mesaj, lblText.Font, lblText.Width);
+                if (size.Height > 30)
+                {
+                    pBubble.Height = (int)size.Height + 25;
+                    pMsg.Height = pBubble.Height + 10;
+                }
+            }
+        }
+
+        private class ChatContact
+        {
+            public string Username { get; set; }
+            public string AdSoyad { get; set; }
+            public string Detay { get; set; }
         }
     }
 }

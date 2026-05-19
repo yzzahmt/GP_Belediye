@@ -1,4 +1,4 @@
-﻿namespace Belediye_Otomasyonu.Views
+namespace Belediye_Otomasyonu.Views
 {
     partial class YeniSifreForm
     {
@@ -64,7 +64,7 @@
             // YeniSifreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(478, 335);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnDogrula);

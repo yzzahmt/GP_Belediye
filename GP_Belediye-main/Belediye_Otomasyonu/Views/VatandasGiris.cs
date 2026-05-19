@@ -12,6 +12,7 @@ namespace Belediye_Otomasyonu.Views
         public VatandasGiris()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 

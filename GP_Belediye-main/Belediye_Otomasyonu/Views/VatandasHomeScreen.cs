@@ -23,6 +23,7 @@ namespace Belediye_Otomasyonu.Views
         {
             _tcKimlik = tcKimlik ?? "";
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             OlusturArayuz();
         }
 
@@ -41,7 +42,6 @@ namespace Belediye_Otomasyonu.Views
 
             _pnlIcerik = new Panel { Dock = DockStyle.Fill, BackColor = UiTheme.Surface };
             this.Controls.Add(_pnlIcerik);
-            _pnlIcerik.SendToBack();
         }
 
         private Panel OlusturSidebar()
@@ -50,7 +50,7 @@ namespace Belediye_Otomasyonu.Views
             sidebar.Paint += (s, e) => {
                 using (var br = new LinearGradientBrush(
                     new Point(0, 0), new Point(0, sidebar.Height),
-                    UiTheme.SidebarBg, Color.FromArgb(12, 25, 65)))
+                    UiTheme.SidebarBg, Color.FromArgb(17, 28, 59)))
                     e.Graphics.FillRectangle(br, sidebar.ClientRectangle);
             };
 
@@ -59,7 +59,7 @@ namespace Belediye_Otomasyonu.Views
             pnlLogo.Paint += (s, e) => {
                 using (var br = new LinearGradientBrush(
                     new Point(0, 0), new Point(pnlLogo.Width, 0),
-                    UiTheme.PrimaryDark, Color.FromArgb(18, 45, 95)))
+                    UiTheme.PrimaryDark, Color.FromArgb(28, 37, 65)))
                     e.Graphics.FillRectangle(br, pnlLogo.ClientRectangle);
             };
             var sepLogo = new Panel { Dock = DockStyle.Bottom, Height = 3, BackColor = UiTheme.Accent };
@@ -73,21 +73,18 @@ namespace Belediye_Otomasyonu.Views
             };
             pnlLogo.Controls.Add(lblLogo);
             pnlLogo.Controls.Add(sepLogo);
-            sidebar.Controls.Add(pnlLogo);
 
             // Kullanici
             BelediyeDbServisi.TryGetKullaniciDisplayName(_tcKimlik, out _adSoyad);
             var pnlUser = new Panel { Dock = DockStyle.Top, Height = 72 };
             UiTheme.SidebarUserPaneli(pnlUser, _adSoyad.Length > 0 ? _adSoyad : _tcKimlik, "Vatandaş");
-            sidebar.Controls.Add(pnlUser);
 
             // Cikis
             var bCikis = new Button { Text = "  Cikis Yap", Dock = DockStyle.Bottom, Height = 50 };
             UiTheme.SidebarButon(bCikis);
             bCikis.ForeColor = Color.FromArgb(220, 90, 90);
             bCikis.Click += (s, e) => { new İlkGiris().Show(); Close(); };
-            sidebar.Controls.Add(bCikis);
-            sidebar.Controls.Add(new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Color.FromArgb(30, 60, 100) });
+            var sepBottom = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Color.FromArgb(30, 41, 59) };
 
             // Menu butonlar
             Button bProfil  = SidebarBtn("    Profilim");
@@ -111,6 +108,12 @@ namespace Belediye_Otomasyonu.Views
 
             // Menu Panel (scrollable area for buttons)
             var pnlMenu = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.Transparent };
+
+            // Stack correctly:
+            sidebar.Controls.Add(pnlUser);
+            sidebar.Controls.Add(pnlLogo);
+            sidebar.Controls.Add(sepBottom);
+            sidebar.Controls.Add(bCikis);
             sidebar.Controls.Add(pnlMenu);
 
             pnlMenu.Controls.Add(bProfil);

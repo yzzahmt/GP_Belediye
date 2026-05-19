@@ -12,6 +12,7 @@ namespace Belediye_Otomasyonu.Views
         public PersonelGiris()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 

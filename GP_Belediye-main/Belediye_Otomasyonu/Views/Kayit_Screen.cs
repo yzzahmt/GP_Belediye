@@ -15,6 +15,7 @@ namespace Belediye_Otomasyonu
         public Kayit_Screen()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 

@@ -109,7 +109,7 @@ namespace Belediye_Otomasyonu.Views
             // SifremiUnuttumForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(512, 331);
             this.Controls.Add(this.btnIptal);
             this.Controls.Add(this.txtEmail);

@@ -17,6 +17,7 @@ namespace Belediye_Otomasyonu.Views
         {
             _oturumKullaniciAdi = oturumKullaniciAdi ?? "";
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
         }
 
         private void PersonelYonetimForm_Load(object sender, EventArgs e)

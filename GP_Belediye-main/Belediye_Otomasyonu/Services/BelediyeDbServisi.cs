@@ -87,6 +87,70 @@ INSERT INTO borclar (VatandasTC, Aciklama, Miktar, SonOdemeTarihi, Durum) VALUES
                             }
                         }
                     }
+                    // Personel Mesajları Tablosu
+                    using (var cmd = new MySqlCommand(@"
+CREATE TABLE IF NOT EXISTS personel_mesajlari (
+    Id int NOT NULL AUTO_INCREMENT,
+    GonderenKadi varchar(50) NOT NULL,
+    AliciKadi varchar(50) NOT NULL,
+    Mesaj TEXT NOT NULL,
+    Tarih datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Personel Görevleri Tablosu
+                    using (var cmd = new MySqlCommand(@"
+CREATE TABLE IF NOT EXISTS personel_gorevleri (
+    Id int NOT NULL AUTO_INCREMENT,
+    Baslik varchar(200) NOT NULL,
+    Aciklama TEXT NULL,
+    AtananPersonelKadi varchar(50) NOT NULL,
+    VerenKadi varchar(50) NOT NULL,
+    Oncelik varchar(32) NOT NULL DEFAULT 'Orta',
+    Durum varchar(32) NOT NULL DEFAULT 'Baslanmadi',
+    OlusturmaTarihi datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Örnek görevler tohumla
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM personel_gorevleri", con))
+                    {
+                        long count = Convert.ToInt64(cmd.ExecuteScalar());
+                        if (count == 0)
+                        {
+                            using (var cmdSeed = new MySqlCommand(@"
+INSERT INTO personel_gorevleri (Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum) VALUES
+('Sokak Lambası Bakımı', 'Atatürk Mahallesi 5. Sokak üzerindeki arızalı sokak lambalarının değiştirilmesi.', 'personel1', 'admin', 'Yüksek', 'Baslanmadi'),
+('Park Düzenleme Çalışması', 'Belediye parkındaki çim biçme ve bank onarım işlemlerinin tamamlanması.', 'personel1', 'admin', 'Orta', 'DevamEdiyor'),
+('Evrak Arşivleme', '2025 yılına ait vatandaş başvuru dilekçelerinin taranarak dijital arşive aktarılması.', 'personel1', 'admin', 'Düşük', 'Tamamlandi')", con))
+                            {
+                                cmdSeed.ExecuteNonQuery();
+                            }
+                        }
+                    }
+
+                    // Örnek mesajlar tohumla
+                    using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM personel_mesajlari", con))
+                    {
+                        long count = Convert.ToInt64(cmd.ExecuteScalar());
+                        if (count == 0)
+                        {
+                            using (var cmdSeed = new MySqlCommand(@"
+INSERT INTO personel_mesajlari (GonderenKadi, AliciKadi, Mesaj) VALUES
+('admin', 'personel1', 'Merhaba Ahmet Bey, bugün atanan sokak lambası arıza görevini inceleyebilir misiniz?'),
+('personel1', 'admin', 'Merhaba sayın başkanım, ekip ile birlikte sokağa geçiyoruz. Öğleden sonra tamamlamış oluruz.'),
+('admin', 'GENEL', 'Arkadaşlar genel kurul toplantısı saat 14:00 da konferans salonunda yapılacaktır. Tüm personelin katılımı rica olunur.')", con))
+                            {
+                                cmdSeed.ExecuteNonQuery();
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -1532,6 +1596,160 @@ LEFT JOIN kullanicilar k ON b.VatandasTC = k.tc
 WHERE b.Id = @id LIMIT 1", con))
                 {
                     da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    da.Fill(dt);
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        // ── Personel Görev Takibi Metodları ─────────────────────────────────────────
+
+        public static DataTable PersonelGorevleriGetir(string kadi, bool isYonetici)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    string sql = isYonetici
+                        ? "SELECT Id, Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum, OlusturmaTarihi FROM personel_gorevleri ORDER BY Id DESC"
+                        : "SELECT Id, Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum, OlusturmaTarihi FROM personel_gorevleri WHERE AtananPersonelKadi=@k OR VerenKadi=@k ORDER BY Id DESC";
+
+                    using (var da = new MySqlDataAdapter(sql, con))
+                    {
+                        if (!isYonetici)
+                            da.SelectCommand.Parameters.AddWithValue("@k", kadi);
+                        con.Open();
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static string PersonelGoreviEkle(string baslik, string aciklama, string atananKadi, string verenKadi, string oncelik)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "INSERT INTO personel_gorevleri (Baslik, Aciklama, AtananPersonelKadi, VerenKadi, Oncelik, Durum) VALUES (@b, @a, @at, @v, @o, 'Baslanmadi')", con))
+                {
+                    cmd.Parameters.AddWithValue("@b", baslik.Trim());
+                    cmd.Parameters.AddWithValue("@a", aciklama?.Trim() ?? "");
+                    cmd.Parameters.AddWithValue("@at", atananKadi.Trim());
+                    cmd.Parameters.AddWithValue("@v", verenKadi.Trim());
+                    cmd.Parameters.AddWithValue("@o", oncelik.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string PersonelGorevDurumuGuncelle(int id, string durum)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("UPDATE personel_gorevleri SET Durum=@d WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@d", durum);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static string PersonelGorevSil(int id)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand("DELETE FROM personel_gorevleri WHERE Id=@id", con))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        // ── Personel İçi Mesajlaşma (Chat) Metodları ─────────────────────────────────
+
+        public static string MesajGonder(string gonderen, string alici, string mesaj)
+        {
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var cmd = new MySqlCommand(
+                    "INSERT INTO personel_mesajlari (GonderenKadi, AliciKadi, Mesaj) VALUES (@g, @a, @m)", con))
+                {
+                    cmd.Parameters.AddWithValue("@g", gonderen.Trim());
+                    cmd.Parameters.AddWithValue("@a", alici.Trim());
+                    cmd.Parameters.AddWithValue("@m", mesaj.Trim());
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return null;
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        public static DataTable MesajlariGetir(string kadi1, string kadi2)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                {
+                    string sql;
+                    if (kadi2 == "GENEL")
+                    {
+                        sql = "SELECT Id, GonderenKadi, AliciKadi, Mesaj, Tarih FROM personel_mesajlari WHERE AliciKadi='GENEL' ORDER BY Tarih ASC LIMIT 100";
+                    }
+                    else
+                    {
+                        sql = "SELECT Id, GonderenKadi, AliciKadi, Mesaj, Tarih FROM personel_mesajlari WHERE (GonderenKadi=@k1 AND AliciKadi=@k2) OR (GonderenKadi=@k2 AND AliciKadi=@k1) ORDER BY Tarih ASC LIMIT 100";
+                    }
+
+                    using (var da = new MySqlDataAdapter(sql, con))
+                    {
+                        if (kadi2 != "GENEL")
+                        {
+                            da.SelectCommand.Parameters.AddWithValue("@k1", kadi1);
+                            da.SelectCommand.Parameters.AddWithValue("@k2", kadi2);
+                        }
+                        con.Open();
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch { }
+            return dt;
+        }
+
+        public static DataTable TumKullanicilarListesiGetir(string oturumKadi)
+        {
+            var dt = new DataTable();
+            try
+            {
+                using (var con = new MySqlConnection(DatabaseConfig.MySqlBelediye))
+                using (var da = new MySqlDataAdapter(@"
+                    SELECT KullaniciAdi, CONCAT(Ad, ' ', Soyad) AS AdSoyad, COALESCE(Departman, 'Personel') AS Detay, 'Personel' AS Rol FROM personeller WHERE Aktif=1 AND KullaniciAdi != @ok
+                    UNION
+                    SELECT KullaniciAdi, CONCAT(Ad, ' ', Soyad) AS AdSoyad, COALESCE(Unvan, 'Yönetici') AS Detay, 'Yonetici' AS Rol FROM yoneticiler WHERE Aktif=1 AND KullaniciAdi != @ok", con))
+                {
+                    da.SelectCommand.Parameters.AddWithValue("@ok", oturumKadi);
                     con.Open();
                     da.Fill(dt);
                 }

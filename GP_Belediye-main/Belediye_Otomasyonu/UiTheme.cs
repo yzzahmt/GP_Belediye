@@ -8,43 +8,43 @@ namespace Belediye_Otomasyonu
     public static class UiTheme
     {
         // ── Kurumsal Renk Paleti — Premium ──────────────────────────────────────
-        public static readonly Color Primary      = Color.FromArgb(20, 42, 100);   // Derin Modern Lacivert
-        public static readonly Color PrimaryDark  = Color.FromArgb(10, 20, 56);     // Gece Mavisi
-        public static readonly Color PrimaryLight = Color.FromArgb(38, 75, 172);   // Açık Lacivert
-        public static readonly Color Accent       = Color.FromArgb(235, 185, 45);  // Canlı Altın
-        public static readonly Color AccentDark   = Color.FromArgb(185, 140, 20);  // Koyu Altın
-        public static readonly Color AccentLight  = Color.FromArgb(255, 220, 105); // Parlak Altın
-        public static readonly Color Secondary    = Color.FromArgb(30, 85, 200);   // Parlak Mavi
+        public static readonly Color Primary      = Color.FromArgb(79, 70, 229);   // Modern Indigo
+        public static readonly Color PrimaryDark  = Color.FromArgb(15, 23, 42);     // Gece/Obsidyen Slate
+        public static readonly Color PrimaryLight = Color.FromArgb(99, 102, 241);   // Açık Indigo
+        public static readonly Color Accent       = Color.FromArgb(6, 182, 212);    // Canlı Elektrik Turkuaz/Cyan
+        public static readonly Color AccentDark   = Color.FromArgb(8, 145, 178);   // Koyu Turkuaz
+        public static readonly Color AccentLight  = Color.FromArgb(103, 232, 249); // Parlak Turkuaz
+        public static readonly Color Secondary    = Color.FromArgb(99, 102, 241);   // İkincil Renk (Açık Indigo)
 
-        public static readonly Color GradientTop    = Color.FromArgb(8, 15, 45);
-        public static readonly Color GradientBottom = Color.FromArgb(20, 42, 98);
+        public static readonly Color GradientTop    = Color.FromArgb(11, 19, 43);   // Derin Slate Arka Plan Üstü
+        public static readonly Color GradientBottom = Color.FromArgb(28, 37, 65);   // Derin Slate Arka Plan Altı
 
-        public static readonly Color SidebarBg       = Color.FromArgb(10, 18, 52);
-        public static readonly Color SidebarSelected = Color.FromArgb(25, 50, 120);
-        public static readonly Color SidebarHover    = Color.FromArgb(16, 32, 80);
-        public static readonly Color SidebarText     = Color.FromArgb(170, 195, 235);
-        public static readonly Color SidebarTextSel  = Color.FromArgb(235, 185, 45);
-        public static readonly Color SidebarAccent   = Color.FromArgb(235, 185, 45);
+        public static readonly Color SidebarBg       = Color.FromArgb(11, 19, 43);
+        public static readonly Color SidebarSelected = Color.FromArgb(28, 37, 65);
+        public static readonly Color SidebarHover    = Color.FromArgb(17, 28, 59);
+        public static readonly Color SidebarText     = Color.FromArgb(156, 163, 175);
+        public static readonly Color SidebarTextSel  = Color.FromArgb(6, 182, 212);
+        public static readonly Color SidebarAccent   = Color.FromArgb(6, 182, 212);
 
-        public static readonly Color Surface        = Color.FromArgb(242, 245, 252);
-        public static readonly Color SurfaceDark    = Color.FromArgb(226, 232, 245);
+        public static readonly Color Surface        = Color.FromArgb(241, 245, 249); // Modern Slate Açık Gri
+        public static readonly Color SurfaceDark    = Color.FromArgb(226, 232, 240);
         public static readonly Color CardBackground = Color.White;
-        public static readonly Color HeaderBg       = Color.FromArgb(10, 22, 64);
+        public static readonly Color HeaderBg       = Color.FromArgb(11, 19, 43);
 
-        public static readonly Color TextPrimary   = Color.FromArgb(16, 26, 68);
-        public static readonly Color TextMuted     = Color.FromArgb(94, 114, 150);
+        public static readonly Color TextPrimary   = Color.FromArgb(15, 23, 42);     // Obsidyen Slate
+        public static readonly Color TextMuted     = Color.FromArgb(100, 116, 139);  // Slate Muted
         public static readonly Color TextOnPrimary = Color.White;
-        public static readonly Color TextOnDark    = Color.FromArgb(205, 220, 245);
-        public static readonly Color BorderSubtle  = Color.FromArgb(210, 222, 242);
-        public static readonly Color BorderCard    = Color.FromArgb(218, 230, 248);
-        public static readonly Color BorderAccent  = Color.FromArgb(235, 185, 45);
+        public static readonly Color TextOnDark    = Color.FromArgb(203, 213, 225);
+        public static readonly Color BorderSubtle  = Color.FromArgb(226, 232, 240);
+        public static readonly Color BorderCard    = Color.FromArgb(226, 232, 240);
+        public static readonly Color BorderAccent  = Color.FromArgb(6, 182, 212);
 
-        public static readonly Color Success  = Color.FromArgb(16, 172, 86);
-        public static readonly Color Warning  = Color.FromArgb(240, 140, 0);
-        public static readonly Color Danger   = Color.FromArgb(226, 45, 45);
-        public static readonly Color Info     = Color.FromArgb(0, 135, 235);
+        public static readonly Color Success  = Color.FromArgb(16, 185, 129);      // Modern Yeşil (Emerald)
+        public static readonly Color Warning  = Color.FromArgb(245, 158, 11);      // Amber
+        public static readonly Color Danger   = Color.FromArgb(239, 68, 68);        // Kırmızı (Rose)
+        public static readonly Color Info     = Color.FromArgb(6, 182, 212);        // Cyan
 
-        public static readonly Color RowAlt   = Color.FromArgb(248, 250, 255);
+        public static readonly Color RowAlt   = Color.FromArgb(248, 250, 252);
 
         // ── Dimensions ──────────────────────────────────────────────────────────
         public const int AnaButonYukseklik     = 44;
@@ -271,6 +271,107 @@ namespace Belediye_Otomasyonu
             YuvarlakButon(b, bgColor, Color.White, 8);
         }
 
+        public static void KucukYuvarlakButon(Button b, Color arkaPlan, Color yaziRengi, int radius = 4)
+        {
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderSize = 0;
+            b.Cursor = Cursors.Hand;
+            b.UseVisualStyleBackColor = false;
+            b.MinimumSize = new Size(40, 24);
+
+            b.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Color parentColor = Color.White;
+                if (b.Parent != null)
+                {
+                    if (b.Parent.BackColor == Color.Transparent && b.Parent.Parent != null)
+                        parentColor = b.Parent.Parent.BackColor;
+                    else
+                        parentColor = b.Parent.BackColor;
+                }
+                
+                using (var brushBg = new SolidBrush(parentColor))
+                    e.Graphics.FillRectangle(brushBg, b.ClientRectangle);
+
+                bool isHover = b.ClientRectangle.Contains(b.PointToClient(Cursor.Position));
+                Color drawColor = b.Enabled ? (isHover ? ControlPaint.Light(arkaPlan, 0.15f) : arkaPlan) : Color.FromArgb(200, 200, 200);
+
+                using (var path = new GraphicsPath())
+                {
+                    int d = radius * 2;
+                    var r = new Rectangle(0, 0, b.Width - 1, b.Height - 1);
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+
+                    using (var br = new SolidBrush(drawColor))
+                        e.Graphics.FillPath(br, path);
+                }
+
+                TextRenderer.DrawText(e.Graphics, b.Text, b.Font, b.ClientRectangle, yaziRengi, 
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
+
+            b.MouseEnter += (s, e) => b.Invalidate();
+            b.MouseLeave += (s, e) => b.Invalidate();
+        }
+
+        public static void KucukIkincilButon(Button b)
+        {
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderSize = 0;
+            b.Cursor = Cursors.Hand;
+            b.UseVisualStyleBackColor = false;
+            b.MinimumSize = new Size(40, 24);
+
+            b.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Color parentColor = Color.White;
+                if (b.Parent != null)
+                {
+                    if (b.Parent.BackColor == Color.Transparent && b.Parent.Parent != null)
+                        parentColor = b.Parent.Parent.BackColor;
+                    else
+                        parentColor = b.Parent.BackColor;
+                }
+                
+                using (var brushBg = new SolidBrush(parentColor))
+                    e.Graphics.FillRectangle(brushBg, b.ClientRectangle);
+
+                bool isHover = b.ClientRectangle.Contains(b.PointToClient(Cursor.Position));
+                Color drawColor = isHover ? Color.FromArgb(240, 242, 245) : Color.Transparent;
+
+                using (var path = new GraphicsPath())
+                {
+                    int d = 8;
+                    var r = new Rectangle(0, 0, b.Width - 1, b.Height - 1);
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+
+                    if (drawColor != Color.Transparent)
+                    {
+                        using (var br = new SolidBrush(drawColor))
+                            e.Graphics.FillPath(br, path);
+                    }
+                    using (var pen = new Pen(BorderSubtle, 1))
+                        e.Graphics.DrawPath(pen, path);
+                }
+
+                TextRenderer.DrawText(e.Graphics, b.Text, b.Font, b.ClientRectangle, TextPrimary, 
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
+
+            b.MouseEnter += (s, e) => b.Invalidate();
+            b.MouseLeave += (s, e) => b.Invalidate();
+        }
+
         // ── Textbox & Combobox Styling Helpers ────────────────────────────────────
         public static void TextBoxKaranlikStil(TextBox txt)
         {
@@ -351,7 +452,7 @@ namespace Belediye_Otomasyonu
             {
                 using (var br = new LinearGradientBrush(
                     new Point(0, 0), new Point(pnl.Width, 0),
-                    HeaderBg, Color.FromArgb(18, 48, 118)))
+                    HeaderBg, Color.FromArgb(28, 37, 65)))
                     e.Graphics.FillRectangle(br, pnl.ClientRectangle);
             };
 

@@ -17,6 +17,7 @@ namespace Belediye_Otomasyonu.Views
         public SifremiUnuttumForm()
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             this.Load += (s, e) => OlusturArayuz();
         }
 

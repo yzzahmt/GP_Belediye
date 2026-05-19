@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Belediye_Otomasyonu;
 using Belediye_Otomasyonu.Services;
@@ -13,6 +13,7 @@ namespace Belediye_Otomasyonu.Views
         public SifreGuncelleForm(string gelenTc, string gelenEmail)
         {
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             tc = gelenTc;
             email = gelenEmail;
         }

@@ -17,6 +17,7 @@ namespace Belediye_Otomasyonu.Views
         public BildirimGonderForm(string oturumKadi)
         {
             _oturumKadi = oturumKadi ?? "";
+            this.AutoScaleMode = AutoScaleMode.None;
             InitUI();
         }
 

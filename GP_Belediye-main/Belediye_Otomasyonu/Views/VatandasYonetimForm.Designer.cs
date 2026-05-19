@@ -104,7 +104,7 @@ namespace Belediye_Otomasyonu.Views
             // VatandasYonetimForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(900, 520);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelBottom);

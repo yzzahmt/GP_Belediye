@@ -20,11 +20,13 @@ namespace Belediye_Otomasyonu.Views
         {
             _oturumKullaniciAdi = oturumKullaniciAdi ?? "";
             InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.None;
             OlusturArayuz();
         }
 
         private void OlusturArayuz()
         {
+            this.Controls.Clear();
             bool isYonetici = BelediyeDbServisi.YoneticiMi(_oturumKullaniciAdi);
 
             this.Text = "Başvuru Yönetimi";
@@ -40,20 +42,22 @@ namespace Belediye_Otomasyonu.Views
             var pnlFiltre = new Panel { Dock = DockStyle.Top, Height = 52, BackColor = Color.White };
             pnlFiltre.Paint += (s, e) => { using (var pen = new Pen(UiTheme.BorderSubtle)) e.Graphics.DrawLine(pen, 0, pnlFiltre.Height-1, pnlFiltre.Width, pnlFiltre.Height-1); };
             var cmbDurum = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130, Location = new Point(12, 12), Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbDurum);
             cmbDurum.Items.AddRange(new[] { "Tümü", "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
             cmbDurum.SelectedIndex = 0;
             var cmbKat = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150, Location = new Point(152, 12), Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbKat);
             cmbKat.Items.AddRange(new[] { "Tümü", "Imar & Yapi", "Sosyal Yardim", "Sikayet", "Temizlik", "Ulasim", "Su & Altyapi", "Vergi & Ruhsat", "Evlilik & Nufus", "Diger" });
             cmbKat.SelectedIndex = 0;
             var txtAra = new TextBox { Width = 200, Location = new Point(314, 12), Font = UiTheme.UiFont, ForeColor = UiTheme.TextMuted, Text = "  Ara..." };
             txtAra.GotFocus  += (s, e) => { if (txtAra.Text.Trim() == "Ara...") { txtAra.Text = ""; txtAra.ForeColor = UiTheme.TextPrimary; } };
             txtAra.LostFocus += (s, e) => { if (string.IsNullOrEmpty(txtAra.Text)) { txtAra.Text = "  Ara..."; txtAra.ForeColor = UiTheme.TextMuted; } };
-            var btnFiltre = new Button { Text = "  Filtrele", Location = new Point(524, 8), Width = 100, Height = 36 };
-            UiTheme.AnaEylemButonu(btnFiltre);
-            var btnYenile = new Button { Text = "Yenile", Location = new Point(634, 8), Width = 90, Height = 36 };
-            UiTheme.IkincilButon(btnYenile);
-            var btnKapat = new Button { Text = "Kapat", Location = new Point(1120, 8), Width = 90, Height = 36, Anchor = AnchorStyles.Right | AnchorStyles.Top };
-            UiTheme.IkincilButon(btnKapat);
+            var btnFiltre = new Button { Text = "  Filtrele", Location = new Point(524, 10), Width = 100, Height = 32 };
+            UiTheme.KucukYuvarlakButon(btnFiltre, UiTheme.Primary, Color.White, 4);
+            var btnYenile = new Button { Text = "Yenile", Location = new Point(634, 10), Width = 90, Height = 32 };
+            UiTheme.KucukIkincilButon(btnYenile);
+            var btnKapat = new Button { Text = "Kapat", Location = new Point(1120, 10), Width = 90, Height = 32, Anchor = AnchorStyles.Right | AnchorStyles.Top };
+            UiTheme.KucukIkincilButon(btnKapat);
             btnKapat.Click += (s, e) => this.Close();
             pnlFiltre.Controls.AddRange(new Control[] { cmbDurum, cmbKat, txtAra, btnFiltre, btnYenile, btnKapat });
             this.Controls.Add(pnlFiltre);
@@ -61,11 +65,6 @@ namespace Belediye_Otomasyonu.Views
             // Detay paneli (alt)
             pnlDetay = new Panel { Dock = DockStyle.Bottom, Height = 210, BackColor = Color.White, Padding = new Padding(14), Visible = false };
             pnlDetay.Paint += (s, e) => { using (var pen = new Pen(UiTheme.BorderSubtle)) e.Graphics.DrawLine(pen, 0, 0, pnlDetay.Width, 0); };
-            
-            var btnKapatDetay = new Button { Text = "✖", Anchor = AnchorStyles.Top | AnchorStyles.Right, Location = new Point(1170, 8), Width = 30, Height = 30, FlatStyle = FlatStyle.Flat, ForeColor = UiTheme.Danger, Font = UiTheme.SmallBold };
-            btnKapatDetay.FlatAppearance.BorderSize = 0;
-            btnKapatDetay.Cursor = Cursors.Hand;
-            btnKapatDetay.Click += (s, e) => { pnlDetay.Visible = false; };
 
             // Kolon 3: Not Ekle (En sağ)
             var pnlNot = new Panel { Dock = DockStyle.Right, Width = 300, Padding = new Padding(20,0,0,0) };
@@ -83,6 +82,7 @@ namespace Belediye_Otomasyonu.Views
             var pnlDurum = new Panel { Dock = DockStyle.Right, Width = 220, Padding = new Padding(20,0,0,0) };
             var lblDurBas = new Label { Text = "Durum Değiştir:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Top, Height = 26 };
             var cmbYeniDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top, Font = UiTheme.UiFont, Height = 32 };
+            UiTheme.ComboBoxStil(cmbYeniDur);
             cmbYeniDur.Items.AddRange(new[] { "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
             cmbYeniDur.SelectedIndex = 0;
             var btnDurGun = new Button { Text = "Durumu Güncelle", Dock = DockStyle.Top, Height = 36 };
@@ -101,8 +101,10 @@ namespace Belediye_Otomasyonu.Views
                 var pnlAtama = new Panel { Dock = DockStyle.Right, Width = 260, Padding = new Padding(20,0,0,0) };
                 var lblAtaBas = new Label { Text = "Personel Ata:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Top, Height = 26 };
                 cmbAtanDep = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top, Font = UiTheme.UiFont, Height = 32 };
+                UiTheme.ComboBoxStil(cmbAtanDep);
                 var pnlSpacer = new Panel { Dock = DockStyle.Top, Height = 6 };
                 cmbAtanPers = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top, Font = UiTheme.UiFont, Height = 32 };
+                UiTheme.ComboBoxStil(cmbAtanPers);
                 var pnlSpacer2 = new Panel { Dock = DockStyle.Top, Height = 8 };
                 var btnAtaYap = new Button { Text = "Personel Ata", Dock = DockStyle.Top, Height = 36 };
                 UiTheme.AccentButon(btnAtaYap);
@@ -158,10 +160,19 @@ namespace Belediye_Otomasyonu.Views
 
             // Kolon 1: Başvuru Detayı (Sol, Fill)
             var pnlDet = new Panel { Dock = DockStyle.Fill };
+            pnlDet.Width = 400;
             lblDetBas = new Label { Text = "Başvuru Detayı", Font = UiTheme.UiFontBold, ForeColor = UiTheme.Primary, Dock = DockStyle.Top, Height = 26 };
             rtbDetay = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, BorderStyle = BorderStyle.None, Font = UiTheme.UiFont, BackColor = Color.White };
+            
+            var btnKapatDetay = new Button { Text = "✖", Anchor = AnchorStyles.Top | AnchorStyles.Right, Location = new Point(370, 2), Width = 26, Height = 26, FlatStyle = FlatStyle.Flat, ForeColor = UiTheme.Danger, Font = UiTheme.SmallBold };
+            btnKapatDetay.FlatAppearance.BorderSize = 0;
+            btnKapatDetay.Cursor = Cursors.Hand;
+            btnKapatDetay.Click += (s, e) => { pnlDetay.Visible = false; };
+            
+            pnlDet.Controls.Add(btnKapatDetay);
             pnlDet.Controls.Add(rtbDetay);
             pnlDet.Controls.Add(lblDetBas);
+            btnKapatDetay.BringToFront();
             pnlDetay.Controls.Add(pnlDet);
 
             btnDurGun.Click += (s, e) => {
@@ -181,8 +192,6 @@ namespace Belediye_Otomasyonu.Views
                 txtNot.Clear();
             };
 
-            pnlDetay.Controls.Add(btnKapatDetay);
-            btnKapatDetay.BringToFront();
             this.Controls.Add(pnlDetay);
 
             // Grid
@@ -236,6 +245,11 @@ namespace Belediye_Otomasyonu.Views
                 }
             };
             this.Controls.Add(dgv);
+
+            hdr.BringToFront();
+            pnlFiltre.BringToFront();
+            pnlDetay.BringToFront();
+            dgv.SendToBack();
 
             Action yukleAc = () => Yukle(cmbDurum, cmbKat, txtAra);
             btnFiltre.Click  += (s, e) => yukleAc();

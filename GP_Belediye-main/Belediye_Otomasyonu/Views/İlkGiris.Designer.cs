@@ -22,7 +22,7 @@ namespace Belediye_Otomasyonu.Views
             // İlkGiris
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(860, 600);
             this.Name = "İlkGiris";
             this.Text = "Belediye Otomasyonu — Giriş";
