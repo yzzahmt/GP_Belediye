@@ -99,7 +99,12 @@ namespace Belediye_Otomasyonu.Views
         }
 
         private TextBox Txt(int x, int y) {
-            return new TextBox { Location = new Point(x, y), Width = 308, Height = 36, Font = UiTheme.UiFont, BackColor = Color.FromArgb(30, 20, 60), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            var t = new TextBox { Location = new Point(x, y), Width = 308, Height = 36 };
+            UiTheme.TextBoxKaranlikStil(t);
+            t.BackColor = Color.FromArgb(30, 20, 60);
+            t.GotFocus += (s, e) => t.BackColor = Color.FromArgb(40, 25, 80);
+            t.LostFocus += (s, e) => t.BackColor = Color.FromArgb(30, 20, 60);
+            return t;
         }
         private void FillRounded(Graphics g, Brush b, Rectangle r, int rad) {
             int d = rad*2; using (var p = new GraphicsPath()) { p.AddArc(r.X,r.Y,d,d,180,90); p.AddArc(r.Right-d,r.Y,d,d,270,90); p.AddArc(r.Right-d,r.Bottom-d,d,d,0,90); p.AddArc(r.X,r.Bottom-d,d,d,90,90); p.CloseFigure(); g.FillPath(b,p); }

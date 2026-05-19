@@ -8,43 +8,43 @@ namespace Belediye_Otomasyonu
     public static class UiTheme
     {
         // ── Kurumsal Renk Paleti — Premium ──────────────────────────────────────
-        public static readonly Color Primary      = Color.FromArgb(15, 35, 90);    // Derin Lacivert
-        public static readonly Color PrimaryDark  = Color.FromArgb(8, 16, 50);     // Gece Mavisi
-        public static readonly Color PrimaryLight = Color.FromArgb(32, 65, 150);   // Açık Lacivert
-        public static readonly Color Accent       = Color.FromArgb(212, 175, 55);  // Altın
-        public static readonly Color AccentDark   = Color.FromArgb(165, 130, 25);  // Koyu Altın
-        public static readonly Color AccentLight  = Color.FromArgb(255, 215, 100); // Parlak Altın
-        public static readonly Color Secondary    = Color.FromArgb(25, 75, 175);   // Parlak Mavi
+        public static readonly Color Primary      = Color.FromArgb(20, 42, 100);   // Derin Modern Lacivert
+        public static readonly Color PrimaryDark  = Color.FromArgb(10, 20, 56);     // Gece Mavisi
+        public static readonly Color PrimaryLight = Color.FromArgb(38, 75, 172);   // Açık Lacivert
+        public static readonly Color Accent       = Color.FromArgb(235, 185, 45);  // Canlı Altın
+        public static readonly Color AccentDark   = Color.FromArgb(185, 140, 20);  // Koyu Altın
+        public static readonly Color AccentLight  = Color.FromArgb(255, 220, 105); // Parlak Altın
+        public static readonly Color Secondary    = Color.FromArgb(30, 85, 200);   // Parlak Mavi
 
-        public static readonly Color GradientTop    = Color.FromArgb(6, 12, 40);
-        public static readonly Color GradientBottom = Color.FromArgb(15, 35, 85);
+        public static readonly Color GradientTop    = Color.FromArgb(8, 15, 45);
+        public static readonly Color GradientBottom = Color.FromArgb(20, 42, 98);
 
-        public static readonly Color SidebarBg       = Color.FromArgb(7, 13, 42);
-        public static readonly Color SidebarSelected = Color.FromArgb(18, 40, 95);
-        public static readonly Color SidebarHover    = Color.FromArgb(12, 26, 68);
-        public static readonly Color SidebarText     = Color.FromArgb(155, 178, 215);
-        public static readonly Color SidebarTextSel  = Color.FromArgb(212, 175, 55);
-        public static readonly Color SidebarAccent   = Color.FromArgb(212, 175, 55);
+        public static readonly Color SidebarBg       = Color.FromArgb(10, 18, 52);
+        public static readonly Color SidebarSelected = Color.FromArgb(25, 50, 120);
+        public static readonly Color SidebarHover    = Color.FromArgb(16, 32, 80);
+        public static readonly Color SidebarText     = Color.FromArgb(170, 195, 235);
+        public static readonly Color SidebarTextSel  = Color.FromArgb(235, 185, 45);
+        public static readonly Color SidebarAccent   = Color.FromArgb(235, 185, 45);
 
-        public static readonly Color Surface        = Color.FromArgb(232, 238, 250);
-        public static readonly Color SurfaceDark    = Color.FromArgb(218, 226, 242);
+        public static readonly Color Surface        = Color.FromArgb(242, 245, 252);
+        public static readonly Color SurfaceDark    = Color.FromArgb(226, 232, 245);
         public static readonly Color CardBackground = Color.White;
-        public static readonly Color HeaderBg       = Color.FromArgb(8, 18, 55);
+        public static readonly Color HeaderBg       = Color.FromArgb(10, 22, 64);
 
-        public static readonly Color TextPrimary   = Color.FromArgb(12, 22, 58);
-        public static readonly Color TextMuted     = Color.FromArgb(88, 108, 142);
+        public static readonly Color TextPrimary   = Color.FromArgb(16, 26, 68);
+        public static readonly Color TextMuted     = Color.FromArgb(94, 114, 150);
         public static readonly Color TextOnPrimary = Color.White;
-        public static readonly Color TextOnDark    = Color.FromArgb(195, 212, 240);
-        public static readonly Color BorderSubtle  = Color.FromArgb(195, 210, 228);
-        public static readonly Color BorderCard    = Color.FromArgb(208, 222, 240);
-        public static readonly Color BorderAccent  = Color.FromArgb(212, 175, 55);
+        public static readonly Color TextOnDark    = Color.FromArgb(205, 220, 245);
+        public static readonly Color BorderSubtle  = Color.FromArgb(210, 222, 242);
+        public static readonly Color BorderCard    = Color.FromArgb(218, 230, 248);
+        public static readonly Color BorderAccent  = Color.FromArgb(235, 185, 45);
 
-        public static readonly Color Success  = Color.FromArgb(14, 142, 66);
-        public static readonly Color Warning  = Color.FromArgb(205, 105, 0);
-        public static readonly Color Danger   = Color.FromArgb(180, 25, 25);
-        public static readonly Color Info     = Color.FromArgb(2, 115, 195);
+        public static readonly Color Success  = Color.FromArgb(16, 172, 86);
+        public static readonly Color Warning  = Color.FromArgb(240, 140, 0);
+        public static readonly Color Danger   = Color.FromArgb(226, 45, 45);
+        public static readonly Color Info     = Color.FromArgb(0, 135, 235);
 
-        public static readonly Color RowAlt   = Color.FromArgb(242, 247, 255);
+        public static readonly Color RowAlt   = Color.FromArgb(248, 250, 255);
 
         // ── Dimensions ──────────────────────────────────────────────────────────
         public const int AnaButonYukseklik     = 44;
@@ -131,90 +131,183 @@ namespace Belediye_Otomasyonu
             }
         }
 
-        // ── Ana Eylem Butonu ─────────────────────────────────────────────────────
-        public static void AnaEylemButonu(Button b)
+        // ── Custom Rounded Button Drawing ────────────────────────────────────────
+        public static void YuvarlakButon(Button b, Color arkaPlan, Color yaziRengi, int radius = 6)
         {
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderSize = 0;
-            b.FlatAppearance.MouseOverBackColor = PrimaryLight;
-            b.BackColor = Primary;
-            b.ForeColor = TextOnPrimary;
-            b.Font = UiFontBold;
             b.Cursor = Cursors.Hand;
             b.UseVisualStyleBackColor = false;
             b.MinimumSize = new Size(120, AnaButonYukseklik);
             if (b.Height < AnaButonYukseklik) b.Height = AnaButonYukseklik;
+
+            b.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Color parentColor = Color.White;
+                if (b.Parent != null)
+                {
+                    if (b.Parent.BackColor == Color.Transparent && b.Parent.Parent != null)
+                        parentColor = b.Parent.Parent.BackColor;
+                    else
+                        parentColor = b.Parent.BackColor;
+                }
+                
+                using (var brushBg = new SolidBrush(parentColor))
+                    e.Graphics.FillRectangle(brushBg, b.ClientRectangle);
+
+                bool isHover = b.ClientRectangle.Contains(b.PointToClient(Cursor.Position));
+                Color drawColor = b.Enabled ? (isHover ? ControlPaint.Light(arkaPlan, 0.15f) : arkaPlan) : Color.FromArgb(200, 200, 200);
+
+                using (var path = new GraphicsPath())
+                {
+                    int d = radius * 2;
+                    var r = new Rectangle(0, 0, b.Width - 1, b.Height - 1);
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+
+                    using (var br = new SolidBrush(drawColor))
+                        e.Graphics.FillPath(br, path);
+                }
+
+                TextRenderer.DrawText(e.Graphics, b.Text, b.Font, b.ClientRectangle, yaziRengi, 
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
+            };
+
+            b.MouseEnter += (s, e) => b.Invalidate();
+            b.MouseLeave += (s, e) => b.Invalidate();
         }
 
-        public static void IkincilButon(Button b)
+        public static void YuvarlakButonBorder(Button b, Color arkaPlan, Color yaziRengi, Color borderColor, int radius = 6)
         {
             b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderSize = 1;
-            b.FlatAppearance.BorderColor = BorderSubtle;
-            b.FlatAppearance.MouseOverBackColor = Color.FromArgb(235, 240, 250);
-            b.BackColor = Color.White;
-            b.ForeColor = TextPrimary;
-            b.Font = UiFontBold;
+            b.FlatAppearance.BorderSize = 0;
             b.Cursor = Cursors.Hand;
             b.UseVisualStyleBackColor = false;
             b.MinimumSize = new Size(IkincilButonGenislik, IkincilButonYukseklik);
             if (b.Width < IkincilButonGenislik) b.Width = IkincilButonGenislik;
             if (b.Height < IkincilButonYukseklik) b.Height = IkincilButonYukseklik;
+
+            b.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Color parentColor = Color.White;
+                if (b.Parent != null)
+                {
+                    if (b.Parent.BackColor == Color.Transparent && b.Parent.Parent != null)
+                        parentColor = b.Parent.Parent.BackColor;
+                    else
+                        parentColor = b.Parent.BackColor;
+                }
+                
+                using (var brushBg = new SolidBrush(parentColor))
+                    e.Graphics.FillRectangle(brushBg, b.ClientRectangle);
+
+                bool isHover = b.ClientRectangle.Contains(b.PointToClient(Cursor.Position));
+                Color drawColor = b.Enabled ? (isHover ? Color.FromArgb(245, 248, 255) : arkaPlan) : Color.FromArgb(230, 230, 230);
+
+                using (var path = new GraphicsPath())
+                {
+                    int d = radius * 2;
+                    var r = new Rectangle(0, 0, b.Width - 1, b.Height - 1);
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+
+                    using (var br = new SolidBrush(drawColor))
+                        e.Graphics.FillPath(br, path);
+
+                    using (var pen = new Pen(borderColor, 1))
+                        e.Graphics.DrawPath(pen, path);
+                }
+
+                TextRenderer.DrawText(e.Graphics, b.Text, b.Font, b.ClientRectangle, yaziRengi, 
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
+            };
+
+            b.MouseEnter += (s, e) => b.Invalidate();
+            b.MouseLeave += (s, e) => b.Invalidate();
+        }
+
+        // ── Ana Eylem Butonları ──────────────────────────────────────────────────
+        public static void AnaEylemButonu(Button b)
+        {
+            b.Font = UiFontBold;
+            YuvarlakButon(b, Primary, TextOnPrimary, 6);
+        }
+
+        public static void IkincilButon(Button b)
+        {
+            b.Font = UiFontBold;
+            YuvarlakButonBorder(b, Color.White, TextPrimary, BorderSubtle, 6);
         }
 
         public static void AccentButon(Button b)
         {
-            b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderSize = 0;
-            b.FlatAppearance.MouseOverBackColor = AccentLight;
-            b.BackColor = Accent;
-            b.ForeColor = PrimaryDark;
             b.Font = UiFontBold;
-            b.Cursor = Cursors.Hand;
-            b.UseVisualStyleBackColor = false;
-            b.MinimumSize = new Size(120, AnaButonYukseklik);
-            if (b.Height < AnaButonYukseklik) b.Height = AnaButonYukseklik;
+            YuvarlakButon(b, Accent, PrimaryDark, 6);
         }
 
         public static void TehlikeButon(Button b)
         {
-            b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderSize = 0;
-            b.FlatAppearance.MouseOverBackColor = Color.FromArgb(210, 40, 40);
-            b.BackColor = Danger;
-            b.ForeColor = Color.White;
             b.Font = UiFontBold;
-            b.Cursor = Cursors.Hand;
-            b.UseVisualStyleBackColor = false;
-            b.MinimumSize = new Size(120, AnaButonYukseklik);
-            if (b.Height < AnaButonYukseklik) b.Height = AnaButonYukseklik;
+            YuvarlakButon(b, Danger, Color.White, 6);
         }
 
         public static void BasariButon(Button b)
         {
-            b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderSize = 0;
-            b.FlatAppearance.MouseOverBackColor = Color.FromArgb(18, 168, 80);
-            b.BackColor = Success;
-            b.ForeColor = Color.White;
             b.Font = UiFontBold;
-            b.Cursor = Cursors.Hand;
-            b.UseVisualStyleBackColor = false;
-            b.MinimumSize = new Size(120, AnaButonYukseklik);
-            if (b.Height < AnaButonYukseklik) b.Height = AnaButonYukseklik;
+            YuvarlakButon(b, Success, Color.White, 6);
         }
 
         public static void HeroButon(Button b, Color bgColor, string emoji = "")
         {
-            b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderSize = 0;
-            b.FlatAppearance.MouseOverBackColor = ControlPaint.Light(bgColor, 0.15f);
-            b.BackColor = bgColor;
-            b.ForeColor = Color.White;
             b.Font = new Font("Segoe UI", 12f, FontStyle.Bold);
-            b.Cursor = Cursors.Hand;
-            b.UseVisualStyleBackColor = false;
-            b.TextAlign = ContentAlignment.MiddleCenter;
+            YuvarlakButon(b, bgColor, Color.White, 8);
+        }
+
+        // ── Textbox & Combobox Styling Helpers ────────────────────────────────────
+        public static void TextBoxKaranlikStil(TextBox txt)
+        {
+            txt.BackColor = Color.FromArgb(18, 35, 75);
+            txt.ForeColor = Color.White;
+            txt.BorderStyle = BorderStyle.FixedSingle;
+            txt.Font = UiFont;
+            
+            txt.GotFocus += (s, e) => {
+                txt.BackColor = Color.FromArgb(24, 46, 96);
+            };
+            txt.LostFocus += (s, e) => {
+                txt.BackColor = Color.FromArgb(18, 35, 75);
+            };
+        }
+
+        public static void TextBoxAydinlikStil(TextBox txt)
+        {
+            txt.BackColor = Color.White;
+            txt.ForeColor = TextPrimary;
+            txt.BorderStyle = BorderStyle.FixedSingle;
+            txt.Font = UiFont;
+            
+            txt.GotFocus += (s, e) => {
+                txt.BackColor = Color.FromArgb(250, 252, 255);
+            };
+            txt.LostFocus += (s, e) => {
+                txt.BackColor = Color.White;
+            };
+        }
+
+        public static void ComboBoxStil(ComboBox cmb)
+        {
+            cmb.FlatStyle = FlatStyle.Flat;
+            cmb.Font = UiFont;
+            cmb.BackColor = Color.White;
+            cmb.ForeColor = TextPrimary;
         }
 
         // ── DataGridView Stili ───────────────────────────────────────────────────
@@ -298,31 +391,117 @@ namespace Belediye_Otomasyonu
             return pnl;
         }
 
+        // ── Sidebar User Panel ──────────────────────────────────────────────────
+        public static void SidebarUserPaneli(Panel p, string kullanici, string rol)
+        {
+            p.BackColor = Color.Transparent;
+            p.Controls.Clear();
+
+            p.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                // Draw a beautiful separator line
+                using (var pen = new Pen(Color.FromArgb(30, 255, 255, 255), 1))
+                {
+                    e.Graphics.DrawLine(pen, 16, p.Height - 1, p.Width - 16, p.Height - 1);
+                }
+            };
+
+            // Avatar placeholder circle
+            var pnlAvatar = new Panel {
+                Size = new Size(38, 38),
+                Location = new Point(18, 16),
+                BackColor = Color.Transparent
+            };
+            pnlAvatar.Paint += (s, e) => {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var br = new SolidBrush(Color.FromArgb(30, Accent)))
+                    e.Graphics.FillEllipse(br, 0, 0, 37, 37);
+                using (var pen = new Pen(Accent, 1))
+                    e.Graphics.DrawEllipse(pen, 0, 0, 37, 37);
+                
+                string init = "👤";
+                if (!string.IsNullOrEmpty(kullanici) && kullanici.Length > 0)
+                {
+                    init = kullanici.Substring(0, 1).ToUpper();
+                }
+                TextRenderer.DrawText(e.Graphics, init, new Font("Segoe UI", 11f, FontStyle.Bold), new Rectangle(0,0,38,38), Accent, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
+            p.Controls.Add(pnlAvatar);
+
+            var lblName = new Label {
+                Text = kullanici,
+                Font = UiFontBold,
+                ForeColor = Color.White,
+                Location = new Point(66, 14),
+                AutoSize = true
+            };
+            var lblRole = new Label {
+                Text = rol,
+                Font = SmallFont,
+                ForeColor = Color.FromArgb(160, 185, 220),
+                Location = new Point(66, 33),
+                AutoSize = true
+            };
+            p.Controls.Add(lblName);
+            p.Controls.Add(lblRole);
+        }
+
         // ── İstatistik Kartı ─────────────────────────────────────────────────────
         public static Panel OlusturStatKart(string baslik, string deger, Color renk, string ikon = "")
         {
             var pnl = new Panel
             {
-                BackColor = Color.White,
-                Margin = new Padding(6),
-                Dock = DockStyle.Fill
+                BackColor = Color.Transparent,
+                Margin = new Padding(8),
+                Dock = DockStyle.Fill,
+                Height = 100
             };
 
             pnl.Paint += (s, e) =>
             {
-                // Sol şerit
-                using (var br = new LinearGradientBrush(
-                    new Point(0, 0), new Point(0, pnl.Height),
-                    renk, ControlPaint.Light(renk, 0.3f)))
-                    e.Graphics.FillRectangle(br, 0, 0, 5, pnl.Height);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                
+                Color parentColor = Surface;
+                if (pnl.Parent != null) parentColor = pnl.Parent.BackColor;
+                using (var brushBg = new SolidBrush(parentColor))
+                    e.Graphics.FillRectangle(brushBg, pnl.ClientRectangle);
 
-                // Çok hafif arka plan tonu
-                using (var br2 = new SolidBrush(Color.FromArgb(10, renk)))
-                    e.Graphics.FillRectangle(br2, 5, 0, pnl.Width - 5, pnl.Height);
+                var r = new Rectangle(0, 0, pnl.Width - 1, pnl.Height - 1);
+                int rad = 8;
+                int d = rad * 2;
+                
+                using (var path = new GraphicsPath())
+                {
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
 
-                // Alt çizgi
-                using (var pen = new Pen(Color.FromArgb(18, renk), 1))
-                    e.Graphics.DrawLine(pen, 5, pnl.Height - 1, pnl.Width, pnl.Height - 1);
+                    using (var br = new SolidBrush(Color.White))
+                        e.Graphics.FillPath(br, path);
+
+                    using (var br2 = new SolidBrush(Color.FromArgb(12, renk)))
+                        e.Graphics.FillPath(br2, path);
+
+                    using (var pen = new Pen(Color.FromArgb(40, renk), 1))
+                        e.Graphics.DrawPath(pen, path);
+                }
+
+                // Left accent bar
+                using (var pathBar = new GraphicsPath())
+                {
+                    int radBar = 4;
+                    int dBar = radBar * 2;
+                    var rBar = new Rectangle(0, 0, 6, pnl.Height - 1);
+                    pathBar.AddArc(rBar.X, rBar.Y, dBar, dBar, 180, 90);
+                    pathBar.AddLine(6, 0, 6, pnl.Height - 1);
+                    pathBar.AddArc(rBar.X, rBar.Bottom - dBar, dBar, dBar, 90, 90);
+                    pathBar.CloseFigure();
+                    using (var brBar = new SolidBrush(renk))
+                        e.Graphics.FillPath(brBar, pathBar);
+                }
             };
 
             if (!string.IsNullOrEmpty(ikon))
@@ -335,11 +514,10 @@ namespace Belediye_Otomasyonu
                     AutoSize = false,
                     Size = new Size(56, 56),
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Location = new Point(-1, -1) // sağda yer tutacak şekilde anchor ile yapılacak
+                    Location = new Point(-1, -1)
                 };
                 lblIkon.Anchor = AnchorStyles.Right | AnchorStyles.Top;
                 pnl.Controls.Add(lblIkon);
-                // sağa yasla
                 pnl.Layout += (s, e2) => { if (lblIkon != null) lblIkon.Location = new Point(pnl.Width - 62, 8); };
             }
 
@@ -405,12 +583,33 @@ namespace Belediye_Otomasyonu
             var renk = DurumRengi(durum);
             var lbl = new Label
             {
-                Text = "  " + (durum ?? "Beklemede") + "  ",
+                Text = "  " + (durum ?? "Beklemede").ToUpper() + "  ",
                 Font = SmallBold,
-                ForeColor = Color.White,
-                BackColor = renk,
+                ForeColor = renk,
+                BackColor = Color.Transparent,
                 AutoSize = true,
-                Padding = new Padding(4, 2, 4, 2)
+                Padding = new Padding(8, 4, 8, 4),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            lbl.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                int rad = 4;
+                int d = rad * 2;
+                var r = new Rectangle(0, 0, lbl.Width - 1, lbl.Height - 1);
+                using (var path = new GraphicsPath())
+                {
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+                    using (var br = new SolidBrush(Color.FromArgb(32, renk)))
+                        e.Graphics.FillPath(br, path);
+                    using (var pen = new Pen(Color.FromArgb(80, renk), 1))
+                        e.Graphics.DrawPath(pen, path);
+                }
+                TextRenderer.DrawText(e.Graphics, lbl.Text, lbl.Font, lbl.ClientRectangle, renk, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             return lbl;
         }
@@ -418,26 +617,55 @@ namespace Belediye_Otomasyonu
         // ── Arama Kutusu ─────────────────────────────────────────────────────────
         public static Panel OlusturAramaKutusu(out TextBox txtArama, string placeholder = "🔍  Ara...")
         {
-            var pnl = new Panel { Height = 40, BackColor = Color.White };
-            pnl.Paint += (s, e) =>
-            {
-                using (var pen = new Pen(BorderSubtle, 1))
-                    e.Graphics.DrawRectangle(pen, 0, 0, pnl.Width - 1, pnl.Height - 1);
-            };
-            txtArama = new TextBox
+            var pnl = new Panel { Height = 40, BackColor = Color.Transparent, Padding = new Padding(12, 10, 12, 10) };
+            var txt = new TextBox
             {
                 Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.None,
                 Font = UiFont,
                 ForeColor = TextMuted,
                 BackColor = Color.White,
-                Text = placeholder,
-                Padding = new Padding(6, 0, 0, 0)
+                Text = placeholder
             };
-            var t = txtArama;
-            t.GotFocus  += (s, e) => { if (t.Text == placeholder) { t.Text = ""; t.ForeColor = TextPrimary; } };
-            t.LostFocus += (s, e) => { if (string.IsNullOrEmpty(t.Text)) { t.Text = placeholder; t.ForeColor = TextMuted; } };
-            pnl.Controls.Add(txtArama);
+            
+            pnl.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                
+                Color parentColor = Surface;
+                if (pnl.Parent != null) parentColor = pnl.Parent.BackColor;
+                using (var brushBg = new SolidBrush(parentColor))
+                    e.Graphics.FillRectangle(brushBg, pnl.ClientRectangle);
+
+                var r = new Rectangle(0, 0, pnl.Width - 1, pnl.Height - 1);
+                int rad = 6;
+                int d = rad * 2;
+                using (var path = new GraphicsPath())
+                {
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+                    using (var br = new SolidBrush(Color.White))
+                        e.Graphics.FillPath(br, path);
+                    using (var pen = new Pen(BorderSubtle, 1))
+                        e.Graphics.DrawPath(pen, path);
+                }
+            };
+            
+            txt.GotFocus  += (s, e) => { if (txt.Text == placeholder) { txt.Text = ""; txt.ForeColor = TextPrimary; } };
+            txt.LostFocus += (s, e) => { if (string.IsNullOrEmpty(txt.Text)) { txt.Text = placeholder; txt.ForeColor = TextMuted; } };
+            
+            txt.Location = new Point(12, 11);
+            txt.Width = pnl.Width - 24;
+            pnl.Layout += (s, e) => {
+                txt.Location = new Point(12, 11);
+                txt.Width = pnl.Width - 24;
+            };
+
+            pnl.Controls.Add(txt);
+            txtArama = txt;
             return pnl;
         }
 

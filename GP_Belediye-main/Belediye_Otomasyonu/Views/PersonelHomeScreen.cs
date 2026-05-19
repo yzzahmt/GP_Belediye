@@ -91,20 +91,10 @@ namespace Belediye_Otomasyonu.Views
             var pnlUser = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 70,
-                BackColor = Color.FromArgb(22, 38, 72),
-                Padding = new Padding(20, 12, 20, 12)
+                Height = 70
             };
             string rol = _isYonetici ? "Yönetici" : "Personel";
-            var lblUser = new Label
-            {
-                Text = $"👤  {_oturumKullaniciAdi}\n    {rol}",
-                Font = new Font("Segoe UI", 9f, FontStyle.Regular),
-                ForeColor = Color.FromArgb(180, 200, 230),
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft
-            };
-            pnlUser.Controls.Add(lblUser);
+            UiTheme.SidebarUserPaneli(pnlUser, _oturumKullaniciAdi, rol);
             sidebar.Controls.Add(pnlUser);
             // Cikis butonu
             var bCikis = new Button { Text = "  🚪  Çıkış Yap", Dock = DockStyle.Bottom, Height = 50 };
@@ -266,12 +256,15 @@ namespace Belediye_Otomasyonu.Views
                     e.Graphics.DrawLine(pen, 0, pnlFiltre.Height-1, pnlFiltre.Width, pnlFiltre.Height-1);
             };
             var cmbDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130, Location = new Point(10, 10), Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbDur);
             cmbDur.Items.AddRange(new[] { "Tümü", "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
             cmbDur.SelectedIndex = 0;
             var cmbKat = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150, Location = new Point(150, 10), Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbKat);
             cmbKat.Items.AddRange(new[] { "Tümü", "Imar & Yapi", "Sosyal Yardim", "Sikayet", "Temizlik", "Ulasim", "Su & Altyapi", "Vergi & Ruhsat", "Evlilik & Nufus", "Diger" });
             cmbKat.SelectedIndex = 0;
             var txtAra = new TextBox { Width = 180, Location = new Point(310, 10), Font = UiTheme.UiFont, ForeColor = UiTheme.TextMuted, Text = "Ara..." };
+            UiTheme.TextBoxAydinlikStil(txtAra);
             txtAra.GotFocus  += (s, e) => { if (txtAra.Text == "Ara...") { txtAra.Text = ""; txtAra.ForeColor = UiTheme.TextPrimary; } };
             txtAra.LostFocus += (s, e) => { if (string.IsNullOrEmpty(txtAra.Text)) { txtAra.Text = "Ara..."; txtAra.ForeColor = UiTheme.TextMuted; } };
             var btnFiltre = new Button { Text = "Filtrele", Location = new Point(500, 8), Width = 90, Height = 32 };
@@ -290,11 +283,13 @@ namespace Belediye_Otomasyonu.Views
             var rtbDet = new RichTextBox { Height = 140, Dock = DockStyle.Top, ReadOnly = true, BorderStyle = BorderStyle.None, Font = UiTheme.UiFont, BackColor = Color.White };
             var lblNot = new Label { Text = "Not Ekle:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Top, Height = 24 };
             var txtNot = new TextBox { Dock = DockStyle.Top, Height = 50, Multiline = true, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
+            UiTheme.TextBoxAydinlikStil(txtNot);
             var btnNotEkle = new Button { Text = "  Not Ekle", Dock = DockStyle.Top, Height = 32 };
             UiTheme.BasariButon(btnNotEkle);
 
             var pnlDurBtn = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Color.White };
             var cmbYeniDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 135, Location = new Point(0, 6), Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbYeniDur);
             cmbYeniDur.Items.AddRange(new[] { "Beklemede", "Islemde", "Tamamlandi", "Reddedildi" });
             cmbYeniDur.SelectedIndex = 0;
             var btnDurGun = new Button { Text = "Durumu Guncelle", Location = new Point(143, 4), Width = 138, Height = 32 };
@@ -315,7 +310,9 @@ namespace Belediye_Otomasyonu.Views
                 pnlAtama = new Panel { Dock = DockStyle.Top, Height = 120, BackColor = Color.White };
                 var lblAtaBas = new Label { Text = "Personel Ata:", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Location = new Point(0, 2), Height = 22, Width = 280 };
                 cmbAtanDep = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 26), Width = 280, Font = UiTheme.UiFont };
+                UiTheme.ComboBoxStil(cmbAtanDep);
                 cmbAtanPers = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Location = new Point(0, 56), Width = 280, Font = UiTheme.UiFont };
+                UiTheme.ComboBoxStil(cmbAtanPers);
                 btnAtaYap = new Button { Text = "Personel Ata", Location = new Point(0, 86), Width = 280, Height = 32 };
                 UiTheme.AccentButon(btnAtaYap);
 
@@ -534,6 +531,7 @@ namespace Belediye_Otomasyonu.Views
 
             var lblB = new Label { Text = "Başlık", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Fill, TextAlign = ContentAlignment.BottomLeft };
             var txtB = new TextBox { Dock = DockStyle.Fill, Font = UiTheme.UiFont, MaxLength = 200 };
+            UiTheme.TextBoxAydinlikStil(txtB);
             var lblI = new Label { Text = "İçerik", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Fill, TextAlign = ContentAlignment.BottomLeft };
             var rtbI = new RichTextBox { Dock = DockStyle.Fill, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
 
@@ -738,6 +736,7 @@ namespace Belediye_Otomasyonu.Views
             // Filtre Barı
             var pnlFilter = new Panel { Dock = DockStyle.Top, Height = 56, BackColor = Color.White, Padding = new Padding(10, 8, 10, 8) };
             var txtAra = new TextBox { Width = 180, Location = new Point(10, 14), Font = UiTheme.UiFont };
+            UiTheme.TextBoxAydinlikStil(txtAra);
             txtAra.Text = "Ara...";
             txtAra.GotFocus += (s, e) => { if (txtAra.Text == "Ara...") txtAra.Text = ""; };
             txtAra.LostFocus += (s, e) => { if (string.IsNullOrEmpty(txtAra.Text)) txtAra.Text = "Ara..."; };
@@ -850,7 +849,9 @@ namespace Belediye_Otomasyonu.Views
                     e.Graphics.DrawLine(pen, 0, 55, pnlFiltre.Width, 55);
             };
             var txtAra = new TextBox { Width = 180, Location = new Point(12, 13), Font = UiTheme.UiFont };
+            UiTheme.TextBoxAydinlikStil(txtAra);
             var cmbDur = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120, Location = new Point(202, 13), Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbDur);
             cmbDur.Items.AddRange(new[] { "Tümü", "Ödenenler", "Ödenmeyenler" });
             cmbDur.SelectedIndex = 0;
             var btnYenile = new Button { Text = "Yenile", Width = 80, Location = new Point(332, 11) };
@@ -869,12 +870,15 @@ namespace Belediye_Otomasyonu.Views
             
             var lblTc = new Label { Text = "Vatandaş T.C. Kimlik:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Dock = DockStyle.Top, Height = 18 };
             var txtTc = new TextBox { Dock = DockStyle.Top, Font = UiTheme.UiFont, MaxLength = 11, BorderStyle = BorderStyle.FixedSingle };
+            UiTheme.TextBoxAydinlikStil(txtTc);
             
             var lblAcik = new Label { Text = "Açıklama / Gelir Kalemi:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Dock = DockStyle.Top, Height = 18 };
             var txtAcik = new TextBox { Dock = DockStyle.Top, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
+            UiTheme.TextBoxAydinlikStil(txtAcik);
             
             var lblMiktar = new Label { Text = "Miktar (₺):", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Dock = DockStyle.Top, Height = 18 };
             var txtMiktar = new TextBox { Dock = DockStyle.Top, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
+            UiTheme.TextBoxAydinlikStil(txtMiktar);
 
             var lblTarih = new Label { Text = "Son Ödeme Tarihi:", Font = UiTheme.SmallBold, ForeColor = UiTheme.TextMuted, Dock = DockStyle.Top, Height = 18 };
             var dtpTarih = new DateTimePicker { Dock = DockStyle.Top, Font = UiTheme.UiFont, Format = DateTimePickerFormat.Short };

@@ -77,15 +77,8 @@ namespace Belediye_Otomasyonu.Views
 
             // Kullanici
             BelediyeDbServisi.TryGetKullaniciDisplayName(_tcKimlik, out _adSoyad);
-            var pnlUser = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Color.Transparent };
-            var lblUser = new Label {
-                Text = "  " + (_adSoyad.Length > 0 ? _adSoyad : _tcKimlik) + "\n  Vatandas",
-                Font = new Font("Segoe UI", 8.5f),
-                ForeColor = Color.FromArgb(160, 190, 230),
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft
-            };
-            pnlUser.Controls.Add(lblUser);
+            var pnlUser = new Panel { Dock = DockStyle.Top, Height = 72 };
+            UiTheme.SidebarUserPaneli(pnlUser, _adSoyad.Length > 0 ? _adSoyad : _tcKimlik, "Vatandaş");
             sidebar.Controls.Add(pnlUser);
 
             // Cikis
@@ -216,10 +209,12 @@ namespace Belediye_Otomasyonu.Views
             tbl.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
 
             var cmbKat = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList, Font = UiTheme.UiFont };
+            UiTheme.ComboBoxStil(cmbKat);
             cmbKat.Items.AddRange(new[] { "Imar & Yapi", "Sosyal Yardim", "Sikayet", "Temizlik & Cevre", "Ulasim", "Su & Altyapi", "Vergi & Ruhsat", "Evlilik & Nufus", "Diger" });
             cmbKat.SelectedIndex = 0;
 
             var txtKon = new TextBox { Dock = DockStyle.Fill, Font = UiTheme.UiFont, MaxLength = 200 };
+            UiTheme.TextBoxAydinlikStil(txtKon);
             var rtbAc  = new RichTextBox { Dock = DockStyle.Fill, Font = UiTheme.UiFont, BorderStyle = BorderStyle.FixedSingle };
 
             tbl.Controls.Add(new Label { Text = "Kategori", Font = UiTheme.UiFontBold, ForeColor = UiTheme.TextPrimary, Dock = DockStyle.Fill }, 0, 0);
@@ -572,10 +567,9 @@ namespace Belediye_Otomasyonu.Views
                 Location = new Point(20, y),
                 Width = 500,
                 Height = height,
-                Multiline = isMultiline,
-                Font = UiTheme.UiFont,
-                BorderStyle = BorderStyle.FixedSingle
+                Multiline = isMultiline
             };
+            UiTheme.TextBoxAydinlikStil(txt);
             if (isPassword) txt.UseSystemPasswordChar = true;
             parent.Controls.Add(txt);
             y += height + 15;

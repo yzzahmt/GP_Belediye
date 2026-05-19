@@ -102,9 +102,7 @@ namespace Belediye_Otomasyonu.Views
         }
 
         private void StilleTextBox(TextBox t) {
-            t.BackColor = Color.FromArgb(18, 35, 75);
-            t.ForeColor = Color.White;
-            t.BorderStyle = BorderStyle.FixedSingle;
+            UiTheme.TextBoxKaranlikStil(t);
         }
 
         private void FillRounded(Graphics g, Brush b, Rectangle r, int rad) {

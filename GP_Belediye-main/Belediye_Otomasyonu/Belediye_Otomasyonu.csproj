@@ -219,6 +219,16 @@
     <Compile Include="Views\YoneticiGiris.Designer.cs">
       <DependentUpon>YoneticiGiris.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\SharedData.cs" />
+    <Compile Include="Views\VatandasForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\PersonelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\YoneticiForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <EmbeddedResource Include="Views\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
